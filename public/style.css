@@ -38,9 +38,7 @@ body {
 }
 .brand { display: flex; align-items: center; gap: 12px; }
 .logo {
-  display: grid; place-items: center; width: 40px; height: 40px; border-radius: 11px;
-  background: linear-gradient(135deg, var(--brand), var(--brand-2));
-  color: #fff; font-weight: 700; font-size: 14px; letter-spacing: .02em;
+  display: block; width: 40px; height: 40px; border-radius: 11px;
   box-shadow: 0 4px 14px rgba(79, 70, 229, .35);
 }
 .topbar h1 { font-size: 17px; font-weight: 700; margin: 0; letter-spacing: -.01em; }
@@ -207,7 +205,7 @@ textarea { resize: vertical; line-height: 1.5; }
 @media (max-width: 900px) { .paper.tpl-moderno .head { margin: 0 -22px 6px; padding: 22px 22px 18px; } }
 @media (max-width: 600px) {
   .topbar { padding: 10px 14px; gap: 10px; }
-  .logo { width: 34px; height: 34px; font-size: 12px; border-radius: 9px; }
+  .logo { width: 34px; height: 34px; border-radius: 9px; }
   .tagline { display: none; }
   .actions { width: 100%; flex-wrap: nowrap; }
   .actions button { flex: 1; padding: 9px 8px; font-size: 13px; white-space: nowrap; }
