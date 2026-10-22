@@ -45,6 +45,7 @@
 
   const state = {
     plantilla: "clasico",
+    estiloHabilidades: "lista",
     nombre: "", titulo: "", email: "", telefono: "", ubicacion: "", linkedin: "", web: "",
     resumen: "", habilidades: "", adicional: "",
     experiencia: [], educacion: [], idiomas: [],
@@ -63,6 +64,57 @@
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) Object.assign(state, JSON.parse(raw));
     } catch (_) {}
+  }
+
+  // Igual que lib/skills.js: "Excel: 4", "Excel - Avanzado", "Excel (80%)".
+  const LEVEL_WORDS = { basico: 1, inicial: 1, principiante: 1, intermedio: 3, medio: 3, avanzado: 4, alto: 4, experto: 5, nativo: 5 };
+  function toLevel(raw) {
+    const s = String(raw || "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    if (!s) return null;
+    const n = parseFloat(s.replace(",", "."));
+    if (!isNaN(n)) {
+      if (s.includes("%") || n > 5) return Math.max(1, Math.min(5, Math.round(n / 20)));
+      return Math.max(1, Math.min(5, Math.round(n)));
+    }
+    return LEVEL_WORDS[s] || null;
+  }
+  function parseSkills(text) {
+    return String(text || "")
+      .split(/[,\n]/)
+      .map((s) => s.replace(/^[\s•\-*]+/, "").trim())
+      .filter(Boolean)
+      .map((s) => {
+        const m = /^(.*?)\s*(?::|\s-\s|\()\s*([^()]+?)\)?\s*$/.exec(s);
+        if (m && m[1]) {
+          const level = toLevel(m[2]);
+          if (level) return { name: m[1].trim(), level };
+        }
+        return { name: s, level: null };
+      });
+  }
+  function skillsHtml(skills, estilo) {
+    const lvl = (s) => s.level || 3;
+    switch (estilo) {
+      case "etiquetas":
+        return `<div class="sk-tags">${skills.map((s) => `<span>${esc(s.name)}</span>`).join("")}</div>`;
+      case "columnas":
+        return `<ul class="sk-cols">${skills.map((s) => `<li>${esc(s.name)}</li>`).join("")}</ul>`;
+      case "barras":
+        return `<div class="sk-grid">${skills
+          .map((s) => `<div class="sk-bar"><div>${esc(s.name)}</div><i><b style="width:${lvl(s) * 20}%"></b></i></div>`)
+          .join("")}</div>`;
+      case "puntos":
+        return `<div class="sk-grid">${skills
+          .map((s) => {
+            const n = lvl(s);
+            let dots = "";
+            for (let d = 0; d < 5; d++) dots += `<b class="${d < n ? "on" : ""}"></b>`;
+            return `<div class="sk-dots"><span>${esc(s.name)}</span><span>${dots}</span></div>`;
+          })
+          .join("")}</div>`;
+      default:
+        return `<p>${skills.map((s) => esc(s.name)).join(" &nbsp;·&nbsp; ")}</p>`;
+    }
   }
 
   function bulletList(text) {
@@ -103,8 +155,8 @@
         html += bulletList(e.descripcion);
       });
     }
-    const skills = state.habilidades.split(/[,\n]/).map((s) => s.trim()).filter(Boolean);
-    if (skills.length) html += `<h3>Habilidades</h3><p>${skills.map(esc).join(" &nbsp;·&nbsp; ")}</p>`;
+    const skills = parseSkills(state.habilidades);
+    if (skills.length) html += `<h3>Habilidades</h3>${skillsHtml(skills, state.estiloHabilidades)}`;
 
     const idi = state.idiomas.filter((i) => i.idioma);
     if (idi.length) {
@@ -130,7 +182,7 @@
 
   function fillStatic() {
     form.querySelectorAll("[name]").forEach((el) => {
-      if (el.type === "radio") el.checked = el.value === state.plantilla;
+      if (el.type === "radio") el.checked = el.value === state[el.name];
       else if (state[el.name] !== undefined) el.value = state[el.name];
     });
   }
@@ -151,8 +203,8 @@
       } else {
         state[list][idx][k] = el.value;
       }
-    } else if (el.name === "plantilla") {
-      state.plantilla = el.value;
+    } else if (el.type === "radio") {
+      if (el.checked) state[el.name] = el.value;
     } else if (el.name && state[el.name] !== undefined) {
       state[el.name] = el.value;
     }
