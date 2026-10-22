@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Creador de CV</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>Creador de CV</h1>
+    <div class="actions">
+      <button type="button" id="btn-limpiar" class="ghost">Limpiar</button>
+      <button type="button" id="btn-pdf" class="primary">Descargar PDF</button>
+      <button type="button" id="btn-docx" class="primary alt">Descargar Word</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <form id="cv-form" autocomplete="off">
+      <section class="card">
+        <h2>Formato</h2>
+        <div class="templates" id="templates">
+          <label class="tpl">
+            <input type="radio" name="plantilla" value="clasico" checked />
+            <span class="tpl-box tpl-clasico"><i></i><i></i><i></i></span>
+            <strong>Clásico</strong>
+          </label>
+          <label class="tpl">
+            <input type="radio" name="plantilla" value="moderno" />
+            <span class="tpl-box tpl-moderno"><i></i><i></i><i></i></span>
+            <strong>Moderno</strong>
+          </label>
+          <label class="tpl">
+            <input type="radio" name="plantilla" value="minimalista" />
+            <span class="tpl-box tpl-minimalista"><i></i><i></i><i></i></span>
+            <strong>Minimalista</strong>
+          </label>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Datos personales</h2>
+        <div class="grid">
+          <label>Nombre completo<input name="nombre" placeholder="Ej: María González" /></label>
+          <label>Título profesional<input name="titulo" placeholder="Ej: Ingeniera Civil" /></label>
+          <label>Correo<input name="email" type="email" /></label>
+          <label>Teléfono<input name="telefono" /></label>
+          <label>Ubicación<input name="ubicacion" placeholder="Ciudad, País" /></label>
+          <label>LinkedIn<input name="linkedin" placeholder="linkedin.com/in/..." /></label>
+          <label class="full">Sitio web / portafolio<input name="web" /></label>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Perfil profesional</h2>
+        <label>Resumen breve<textarea name="resumen" rows="4" placeholder="2-4 líneas sobre quién eres y qué ofreces"></textarea></label>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h2>Experiencia laboral</h2><button type="button" class="add" data-add="experiencia">+ Agregar</button></div>
+        <div id="list-experiencia"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h2>Educación</h2><button type="button" class="add" data-add="educacion">+ Agregar</button></div>
+        <div id="list-educacion"></div>
+      </section>
+
+      <section class="card">
+        <h2>Habilidades</h2>
+        <label>Separadas por coma o salto de línea<textarea name="habilidades" rows="2" placeholder="Excel, Liderazgo, Python..."></textarea></label>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h2>Idiomas</h2><button type="button" class="add" data-add="idiomas">+ Agregar</button></div>
+        <div id="list-idiomas"></div>
+      </section>
+
+      <section class="card">
+        <h2>Información adicional</h2>
+        <label>Un punto por línea (cursos, certificaciones, licencias)<textarea name="adicional" rows="3"></textarea></label>
+      </section>
+    </form>
+
+    <aside class="preview-wrap">
+      <div class="preview-title">Vista previa</div>
+      <div id="preview" class="paper tpl-clasico"></div>
+    </aside>
+  </main>
+
+  <div id="toast" class="toast" hidden></div>
+  <script src="app.js"></script>
+</body>
+</html>

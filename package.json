@@ -1,0 +1,17 @@
+{
+  "name": "cv-builder",
+  "version": "1.0.0",
+  "description": "Creador de currículum vitae con exportación a PDF y Word",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "docx": "^8.5.0",
+    "express": "^4.19.2",
+    "pdfkit": "^0.15.0"
+  }
+}
