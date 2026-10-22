@@ -15,6 +15,14 @@ npm start
 # http://localhost:3000
 ```
 
+## Desplegar en Render (plan Free)
+
+1. En https://render.com → **New** → **Blueprint** y elige este repo (usa `render.yaml`).
+2. Render ejecuta `npm install` y `npm start`, y revisa `/health`.
+3. La URL pública queda como `https://cv-builder-xxxx.onrender.com`.
+
+En el plan Free el servicio se duerme tras 15 min sin uso; la primera visita después tarda unos 30–60 s.
+
 ## Desplegar en Railway
 
 1. Sube esta carpeta a un repositorio de GitHub.
