@@ -151,9 +151,25 @@
 
     <aside class="preview-wrap">
       <div class="preview-title"><span class="dot"></span>Vista previa en vivo</div>
-      <div id="preview" class="paper tpl-clasico"></div>
+      <div class="preview-stage" id="preview-stage"><div id="preview" class="paper tpl-clasico"></div></div>
     </aside>
   </main>
+
+  <div id="pay-modal" class="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="pay-title">
+      <img class="modal-logo" src="logo.svg" alt="" width="48" height="48" />
+      <h2 id="pay-title">Descarga tu CV</h2>
+      <p class="modal-price" id="pay-precio"></p>
+      <ul class="modal-list">
+        <li>PDF y Word, en todas las plantillas</li>
+        <li>Descargas ilimitadas durante <span id="pay-horas">24</span> horas</li>
+        <li>Pago seguro con Mercado Pago</li>
+      </ul>
+      <button type="button" id="btn-pagar" class="primary pay">Pagar con Mercado Pago</button>
+      <button type="button" class="ghost" data-close>Ahora no</button>
+      <p class="hint">Tus datos quedan guardados en este navegador mientras pagas.</p>
+    </div>
+  </div>
 
   <div id="toast" class="toast" hidden></div>
   <script src="app.js"></script>

@@ -249,7 +249,22 @@
       html = `<div class="cols"><aside class="side">${side}</aside><div class="main">${html}</div></div>`;
     }
     preview.innerHTML = html;
+    fitPreview();
   }
+
+  // Escala la hoja (ancho fijo de 600 px) al ancho disponible del panel.
+  const stage = document.getElementById("preview-stage");
+  function fitPreview() {
+    const scale = Math.min(1, stage.clientWidth / preview.offsetWidth);
+    preview.style.transform = scale < 1 ? `scale(${scale})` : "";
+    stage.style.height = Math.ceil(preview.offsetHeight * scale) + "px";
+  }
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(fitPreview);
+    ro.observe(stage);
+    ro.observe(preview);
+  }
+  window.addEventListener("resize", fitPreview);
 
   function renderList(name) {
     const host = document.getElementById("list-" + name);
@@ -393,17 +408,99 @@
 
   // Exportación
   const toast = document.getElementById("toast");
-  function showToast(msg) {
+  function showToast(msg, ms = 3000) {
     toast.textContent = msg;
     toast.hidden = false;
     clearTimeout(showToast.t);
-    showToast.t = setTimeout(() => (toast.hidden = true), 3000);
+    showToast.t = setTimeout(() => (toast.hidden = true), ms);
   }
+
+  // Pagos: el servidor dice si están activos. Un pago aprobado se guarda aquí y se envía como pagoId.
+  const PAGO_KEY = "cv-builder:pago";
+  let pagoConfig = { pago: false, precio: 0, moneda: "CLP", vigenciaHoras: 24 };
+  const payModal = document.getElementById("pay-modal");
+
+  function getPago() {
+    try {
+      const p = JSON.parse(localStorage.getItem(PAGO_KEY) || "null");
+      if (p && p.id && Date.now() - p.t < pagoConfig.vigenciaHoras * 3600 * 1000) return p.id;
+    } catch (_) {}
+    return null;
+  }
+  function setPago(id) {
+    try {
+      if (id) localStorage.setItem(PAGO_KEY, JSON.stringify({ id: String(id), t: Date.now() }));
+      else localStorage.removeItem(PAGO_KEY);
+    } catch (_) {}
+  }
+  function precioTexto() {
+    const n = Number(pagoConfig.precio).toLocaleString("es-CL");
+    return pagoConfig.moneda === "CLP" ? `$${n} CLP` : `${n} ${pagoConfig.moneda}`;
+  }
+  function openPayModal() {
+    document.getElementById("pay-precio").textContent = precioTexto();
+    document.getElementById("pay-horas").textContent = pagoConfig.vigenciaHoras;
+    payModal.hidden = false;
+    document.getElementById("btn-pagar").focus();
+  }
+  function closePayModal() {
+    payModal.hidden = true;
+  }
+  payModal.addEventListener("click", (e) => {
+    if (e.target === payModal || e.target.closest("[data-close]")) closePayModal();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !payModal.hidden) closePayModal();
+  });
+  document.getElementById("btn-pagar").addEventListener("click", async (e) => {
+    const btn = e.currentTarget;
+    btn.disabled = true;
+    btn.textContent = "Abriendo Mercado Pago...";
+    try {
+      const res = await fetch("/api/checkout", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok || !data.url) throw new Error(data.error || "Error " + res.status);
+      save();
+      location.href = data.url;
+    } catch (err) {
+      showToast("No se pudo iniciar el pago. Intenta de nuevo.");
+      btn.disabled = false;
+      btn.textContent = "Pagar con Mercado Pago";
+    }
+  });
+
+  // Vuelta desde Mercado Pago: /?pago=ok&payment_id=...&status=approved
+  function leerRetornoPago() {
+    const q = new URLSearchParams(location.search);
+    const resultado = q.get("pago");
+    if (!resultado) return;
+    const id = q.get("payment_id") || q.get("collection_id");
+    const status = q.get("status") || q.get("collection_status");
+    if (resultado === "ok" && id && status === "approved") {
+      setPago(id);
+      showToast("¡Pago aprobado! Ya puedes descargar tu CV en PDF y Word.", 6000);
+    } else if (resultado === "pendiente" || status === "pending" || status === "in_process") {
+      showToast("Tu pago está pendiente. Podrás descargar cuando Mercado Pago lo apruebe.", 6000);
+    } else {
+      showToast("El pago no se completó. Puedes intentarlo de nuevo.", 6000);
+    }
+    history.replaceState(null, "", location.pathname);
+  }
+
+  fetch("/api/config")
+    .then((r) => r.json())
+    .then((c) => { pagoConfig = { ...pagoConfig, ...c }; })
+    .catch(() => {});
 
   async function exportar(tipo, btn) {
     if (!state.nombre.trim()) {
       showToast("Escribe al menos tu nombre antes de descargar");
       form.querySelector('[name="nombre"]').focus();
+      return;
+    }
+    const pagoId = getPago();
+    if (pagoConfig.pago && !pagoId) {
+      openPayModal();
       return;
     }
     const label = btn.textContent;
@@ -413,8 +510,14 @@
       const res = await fetch(`/api/export/${tipo}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(state),
+        body: JSON.stringify({ ...state, pagoId }),
       });
+      if (res.status === 402) {
+        setPago(null);
+        pagoConfig.pago = true;
+        openPayModal();
+        return;
+      }
       if (!res.ok) throw new Error("Error " + res.status);
       const blob = await res.blob();
       const cd = res.headers.get("Content-Disposition") || "";
@@ -448,6 +551,7 @@
   if (!state.educacion.length) state.educacion.push({ ...SCHEMAS.educacion.empty });
   fillStatic();
   renderFoto();
+  leerRetornoPago();
   ["experiencia", "educacion", "idiomas", "secciones"].forEach(renderList);
   renderPreview();
 })();

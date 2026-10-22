@@ -20,6 +20,20 @@ npm start
 # http://localhost:3000
 ```
 
+## Cobro por descarga (Mercado Pago)
+
+Si existe la variable `MP_ACCESS_TOKEN`, cada descarga exige un pago aprobado en Mercado Pago (Checkout Pro).
+Un pago habilita PDF y Word durante 24 horas. Sin la variable, las descargas son gratis.
+
+| Variable | Por defecto | Uso |
+| --- | --- | --- |
+| `MP_ACCESS_TOKEN` | (vacía) | Access Token de producción de Mercado Pago; activa el cobro |
+| `PRECIO` | `1900` | Precio por descarga |
+| `MONEDA` | `CLP` | Moneda de la cuenta de Mercado Pago |
+| `VIGENCIA_HORAS` | `24` | Horas que dura un pago |
+| `PUBLIC_URL` | (se deduce) | URL pública del sitio para la vuelta desde Mercado Pago |
+
+
 ## Desplegar en Render (plan Free)
 
 1. En https://render.com → **New** → **Blueprint** y elige este repo (usa `render.yaml`).
