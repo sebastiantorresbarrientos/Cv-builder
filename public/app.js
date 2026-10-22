@@ -415,10 +415,13 @@
     showToast.t = setTimeout(() => (toast.hidden = true), ms);
   }
 
-  // Pagos: el servidor dice si están activos. Un pago aprobado se guarda aquí y se envía como pagoId.
+  // Pagos: el servidor dice qué medios están activos. Un pago aprobado se guarda aquí y se envía como pagoId
+  // (id de Mercado Pago, o "pp:<orden>" para PayPal).
   const PAGO_KEY = "cv-builder:pago";
-  let pagoConfig = { pago: false, precio: 0, moneda: "CLP", vigenciaHoras: 24 };
+  let pagoConfig = { pago: false, vigenciaHoras: 24, mercadopago: null, paypal: null };
   const payModal = document.getElementById("pay-modal");
+  const btnMp = document.getElementById("btn-pagar-mp");
+  const btnPp = document.getElementById("btn-pagar-pp");
 
   function getPago() {
     try {
@@ -433,15 +436,20 @@
       else localStorage.removeItem(PAGO_KEY);
     } catch (_) {}
   }
-  function precioTexto() {
-    const n = Number(pagoConfig.precio).toLocaleString("es-CL");
-    return pagoConfig.moneda === "CLP" ? `$${n} CLP` : `${n} ${pagoConfig.moneda}`;
+  function precioTexto({ precio, moneda }) {
+    if (moneda === "CLP") return `$${Number(precio).toLocaleString("es-CL")} CLP`;
+    if (moneda === "USD") return `US$${Number(precio).toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
+    return `${precio} ${moneda}`;
   }
   function openPayModal() {
-    document.getElementById("pay-precio").textContent = precioTexto();
+    const { mercadopago, paypal } = pagoConfig;
+    btnMp.hidden = !mercadopago;
+    btnPp.hidden = !paypal;
+    if (mercadopago) btnMp.querySelector("b").textContent = precioTexto(mercadopago);
+    if (paypal) btnPp.querySelector("b").textContent = precioTexto(paypal);
     document.getElementById("pay-horas").textContent = pagoConfig.vigenciaHoras;
     payModal.hidden = false;
-    document.getElementById("btn-pagar").focus();
+    (mercadopago ? btnMp : btnPp).focus();
   }
   function closePayModal() {
     payModal.hidden = true;
@@ -452,12 +460,14 @@
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && !payModal.hidden) closePayModal();
   });
-  document.getElementById("btn-pagar").addEventListener("click", async (e) => {
-    const btn = e.currentTarget;
+
+  // Pide al servidor el link del medio de pago y lleva al usuario allí.
+  async function irAPagar(btn, endpoint, nombre) {
+    const label = btn.innerHTML;
     btn.disabled = true;
-    btn.textContent = "Abriendo Mercado Pago...";
+    btn.textContent = `Abriendo ${nombre}...`;
     try {
-      const res = await fetch("/api/checkout", { method: "POST" });
+      const res = await fetch(endpoint, { method: "POST" });
       const data = await res.json();
       if (!res.ok || !data.url) throw new Error(data.error || "Error " + res.status);
       save();
@@ -465,29 +475,53 @@
     } catch (err) {
       showToast("No se pudo iniciar el pago. Intenta de nuevo.");
       btn.disabled = false;
-      btn.textContent = "Pagar con Mercado Pago";
+      btn.innerHTML = label;
     }
-  });
+  }
+  btnMp.addEventListener("click", () => irAPagar(btnMp, "/api/checkout", "Mercado Pago"));
+  btnPp.addEventListener("click", () => irAPagar(btnPp, "/api/paypal/orden", "PayPal"));
 
-  // Vuelta desde Mercado Pago: /?pago=ok&payment_id=...&status=approved
-  function leerRetornoPago() {
+  // Vuelta desde el medio de pago:
+  //   Mercado Pago: /?pago=ok&payment_id=...&status=approved
+  //   PayPal:       /?pago=paypal&token=<orden>  (hay que capturar la orden en el servidor)
+  async function leerRetornoPago() {
     const q = new URLSearchParams(location.search);
     const resultado = q.get("pago");
     if (!resultado) return;
+    history.replaceState(null, "", location.pathname);
+    const ok = "¡Pago aprobado! Ya puedes descargar tu CV en PDF y Word.";
+
+    if (resultado === "paypal" && q.get("token")) {
+      showToast("Confirmando tu pago con PayPal...", 15000);
+      try {
+        const res = await fetch("/api/paypal/capturar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId: q.get("token") }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.pagoId) throw new Error(data.error);
+        setPago(data.pagoId);
+        showToast(ok, 6000);
+      } catch (err) {
+        showToast("El pago con PayPal no se completó. Puedes intentarlo de nuevo.", 6000);
+      }
+      return;
+    }
+
     const id = q.get("payment_id") || q.get("collection_id");
     const status = q.get("status") || q.get("collection_status");
     if (resultado === "ok" && id && status === "approved") {
       setPago(id);
-      showToast("¡Pago aprobado! Ya puedes descargar tu CV en PDF y Word.", 6000);
+      showToast(ok, 6000);
     } else if (resultado === "pendiente" || status === "pending" || status === "in_process") {
       showToast("Tu pago está pendiente. Podrás descargar cuando Mercado Pago lo apruebe.", 6000);
     } else {
       showToast("El pago no se completó. Puedes intentarlo de nuevo.", 6000);
     }
-    history.replaceState(null, "", location.pathname);
   }
 
-  fetch("/api/config")
+  const configLista = fetch("/api/config")
     .then((r) => r.json())
     .then((c) => { pagoConfig = { ...pagoConfig, ...c }; })
     .catch(() => {});
@@ -498,6 +532,7 @@
       form.querySelector('[name="nombre"]').focus();
       return;
     }
+    await configLista;
     const pagoId = getPago();
     if (pagoConfig.pago && !pagoId) {
       openPayModal();
@@ -514,7 +549,7 @@
       });
       if (res.status === 402) {
         setPago(null);
-        pagoConfig.pago = true;
+        await configLista;
         openPayModal();
         return;
       }

@@ -23,12 +23,34 @@ function fileName(cv) {
 app.get("/api/config", (_req, res) => res.json(pagos.config()));
 
 app.post("/api/checkout", async (req, res) => {
-  if (!pagos.activo()) return res.status(400).json({ error: "Los pagos no están activados" });
+  if (!pagos.mpActivo()) return res.status(400).json({ error: "Mercado Pago no está activado" });
   try {
     res.json(await pagos.crearPreferencia(req));
   } catch (err) {
     console.error("Error creando el pago:", err.message, err.body || "");
     res.status(502).json({ error: "No se pudo iniciar el pago" });
+  }
+});
+
+app.post("/api/paypal/orden", async (req, res) => {
+  if (!pagos.ppActivo()) return res.status(400).json({ error: "PayPal no está activado" });
+  try {
+    res.json(await pagos.crearOrdenPaypal(req));
+  } catch (err) {
+    console.error("Error creando la orden de PayPal:", err.message, JSON.stringify(err.body || ""));
+    res.status(502).json({ error: "No se pudo iniciar el pago con PayPal" });
+  }
+});
+
+app.post("/api/paypal/capturar", async (req, res) => {
+  if (!pagos.ppActivo()) return res.status(400).json({ error: "PayPal no está activado" });
+  try {
+    const pagoId = await pagos.capturarPaypal(req.body && req.body.orderId);
+    if (!pagoId) return res.status(402).json({ error: "El pago de PayPal no se completó" });
+    res.json({ pagoId });
+  } catch (err) {
+    console.error("Error capturando PayPal:", err.message, JSON.stringify(err.body || ""));
+    res.status(502).json({ error: "No se pudo confirmar el pago con PayPal" });
   }
 });
 
@@ -63,5 +85,8 @@ app.post("/api/export/docx", pagos.exigirPago, async (req, res) => {
 app.get("/health", (_req, res) => res.send("ok"));
 
 app.listen(PORT, "0.0.0.0", () =>
-  console.log(`CV Builder escuchando en puerto ${PORT} (pagos ${pagos.activo() ? "activados" : "desactivados"})`)
+  console.log(
+    `CV Builder escuchando en puerto ${PORT} (Mercado Pago ${pagos.mpActivo() ? "activo" : "inactivo"}, ` +
+      `PayPal ${pagos.ppActivo() ? "activo" : "inactivo"})`
+  )
 );

@@ -20,10 +20,11 @@ npm start
 # http://localhost:3000
 ```
 
-## Cobro por descarga (Mercado Pago)
+## Cobro por descarga (Mercado Pago y PayPal)
 
-Si existe la variable `MP_ACCESS_TOKEN`, cada descarga exige un pago aprobado en Mercado Pago (Checkout Pro).
-Un pago habilita PDF y Word durante 24 horas. Sin la variable, las descargas son gratis.
+Cada medio de pago se activa cuando están sus credenciales: `MP_ACCESS_TOKEN` para Mercado Pago (Checkout Pro)
+y `PAYPAL_CLIENT_ID` + `PAYPAL_SECRET` para PayPal (Checkout). Con al menos uno activo, cada descarga exige un
+pago aprobado, que el servidor verifica. Un pago habilita PDF y Word durante 24 horas. Sin credenciales, las descargas son gratis.
 
 | Variable | Por defecto | Uso |
 | --- | --- | --- |
@@ -31,6 +32,9 @@ Un pago habilita PDF y Word durante 24 horas. Sin la variable, las descargas son
 | `PRECIO` | `1900` | Precio por descarga |
 | `MONEDA` | `CLP` | Moneda de la cuenta de Mercado Pago |
 | `VIGENCIA_HORAS` | `24` | Horas que dura un pago |
+| `PAYPAL_CLIENT_ID` / `PAYPAL_SECRET` | (vacías) | Credenciales Live de una app REST de PayPal; activan PayPal |
+| `PAYPAL_PRECIO` | `2` | Precio en PayPal |
+| `PAYPAL_MONEDA` | `USD` | Moneda en PayPal |
 | `PUBLIC_URL` | (se deduce) | URL pública del sitio para la vuelta desde Mercado Pago |
 
 
