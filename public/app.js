@@ -85,7 +85,7 @@
     plantilla: "clasico",
     estiloHabilidades: "lista",
     nombre: "", titulo: "", email: "", telefono: "", ubicacion: "", linkedin: "", web: "",
-    resumen: "", habilidades: "", adicional: "",
+    resumen: "", habilidades: "", adicional: "", foto: "",
     experiencia: [], educacion: [], idiomas: [], secciones: [],
   };
 
@@ -130,27 +130,32 @@
         return { name: s, level: null };
       });
   }
-  function skillsHtml(skills, estilo) {
+  function skillsHtml(skills, estilo, narrow) {
     const lvl = (s) => s.level || 3;
+    const grid = narrow ? "sk-grid one" : "sk-grid";
     switch (estilo) {
       case "etiquetas":
         return `<div class="sk-tags">${skills.map((s) => `<span>${esc(s.name)}</span>`).join("")}</div>`;
       case "columnas":
-        return `<ul class="sk-cols">${skills.map((s) => `<li>${esc(s.name)}</li>`).join("")}</ul>`;
+        return `<ul class="sk-cols${narrow ? " one" : ""}">${skills.map((s) => `<li>${esc(s.name)}</li>`).join("")}</ul>`;
       case "barras":
-        return `<div class="sk-grid">${skills
+        return `<div class="${grid}">${skills
           .map((s) => `<div class="sk-bar"><div>${esc(s.name)}</div><i><b style="width:${lvl(s) * 20}%"></b></i></div>`)
           .join("")}</div>`;
       case "puntos":
-        return `<div class="sk-grid">${skills
+      case "estrellas":
+        return `<div class="${grid}">${skills
           .map((s) => {
             const n = lvl(s);
-            let dots = "";
-            for (let d = 0; d < 5; d++) dots += `<b class="${d < n ? "on" : ""}"></b>`;
-            return `<div class="sk-dots"><span>${esc(s.name)}</span><span>${dots}</span></div>`;
+            let marks = "";
+            for (let d = 0; d < 5; d++) {
+              marks += estilo === "estrellas" ? `<i class="${d < n ? "on" : ""}">★</i>` : `<b class="${d < n ? "on" : ""}"></b>`;
+            }
+            return `<div class="sk-dots"><span>${esc(s.name)}</span><span class="marks">${marks}</span></div>`;
           })
           .join("")}</div>`;
       default:
+        if (narrow) return `<ul>${skills.map((s) => `<li>${esc(s.name)}</li>`).join("")}</ul>`;
         return `<p>${skills.map((s) => esc(s.name)).join(" &nbsp;·&nbsp; ")}</p>`;
     }
   }
@@ -163,14 +168,27 @@
     return [String(a || "").trim(), actual ? "Actualidad" : String(b || "").trim()].filter(Boolean).join(" - ");
   }
 
+  // Plantillas de dos columnas (deben coincidir con las que tienen `sidebar` en lib/themes.js).
+  const SIDEBAR_TEMPLATES = ["lateral", "lateralclaro"];
+
   function renderPreview() {
     preview.className = "paper tpl-" + state.plantilla;
+    const sidebar = SIDEBAR_TEMPLATES.includes(state.plantilla);
     const contacto = [state.email, state.telefono, state.ubicacion, state.linkedin, state.web]
       .map((s) => String(s || "").trim()).filter(Boolean);
-    let html = `<div class="head"><h1>${esc(state.nombre) || '<span class="empty">Tu nombre</span>'}</h1>`;
-    if (state.titulo) html += `<div class="sub">${esc(state.titulo)}</div>`;
-    if (contacto.length) html += `<div class="contact">${contacto.map(esc).join(" &nbsp;|&nbsp; ")}</div>`;
-    html += `</div>`;
+    const nombre = `<h1>${esc(state.nombre) || '<span class="empty">Tu nombre</span>'}</h1>` +
+      (state.titulo ? `<div class="sub">${esc(state.titulo)}</div>` : "");
+    const skills = parseSkills(state.habilidades);
+    const idi = state.idiomas.filter((i) => i.idioma);
+
+    let html = "";
+    if (!sidebar) {
+      html += `<div class="head">${nombre}`;
+      if (contacto.length) html += `<div class="contact">${contacto.map(esc).join(" &nbsp;|&nbsp; ")}</div>`;
+      html += `</div>`;
+    } else {
+      html += `<div class="head">${nombre}</div>`;
+    }
 
     if (state.resumen.trim()) html += `<h3>Perfil profesional</h3><p>${esc(state.resumen)}</p>`;
 
@@ -193,12 +211,11 @@
         html += bulletList(e.descripcion);
       });
     }
-    const skills = parseSkills(state.habilidades);
-    if (skills.length) html += `<h3>Habilidades</h3>${skillsHtml(skills, state.estiloHabilidades)}`;
-
-    const idi = state.idiomas.filter((i) => i.idioma);
-    if (idi.length) {
-      html += `<h3>Idiomas</h3><p>${idi.map((i) => esc(i.idioma) + (i.nivel ? ` (${esc(i.nivel)})` : "")).join(" &nbsp;·&nbsp; ")}</p>`;
+    if (!sidebar) {
+      if (skills.length) html += `<h3>Habilidades</h3>${skillsHtml(skills, state.estiloHabilidades)}`;
+      if (idi.length) {
+        html += `<h3>Idiomas</h3><p>${idi.map((i) => esc(i.idioma) + (i.nivel ? ` (${esc(i.nivel)})` : "")).join(" &nbsp;·&nbsp; ")}</p>`;
+      }
     }
     state.secciones.forEach((sec) => {
       const titulo = String(sec.titulo || "").trim();
@@ -219,6 +236,18 @@
     });
     if (state.adicional.trim()) html += `<h3>Información adicional</h3>${bulletList(state.adicional)}`;
 
+    if (sidebar) {
+      let side = "";
+      if (state.foto) side += `<img class="photo" src="${esc(state.foto)}" alt="" />`;
+      if (contacto.length) side += `<h3>Contacto</h3>${contacto.map((c) => `<div class="c-line">${esc(c)}</div>`).join("")}`;
+      if (skills.length) side += `<h3>Habilidades</h3>${skillsHtml(skills, state.estiloHabilidades, true)}`;
+      if (idi.length) {
+        side += `<h3>Idiomas</h3>${idi
+          .map((i) => `<div class="lang"><b>${esc(i.idioma)}</b>${i.nivel ? `<span>${esc(i.nivel)}</span>` : ""}</div>`)
+          .join("")}`;
+      }
+      html = `<div class="cols"><aside class="side">${side}</aside><div class="main">${html}</div></div>`;
+    }
     preview.innerHTML = html;
   }
 
@@ -322,6 +351,46 @@
     }
   });
 
+  // Foto: se recorta al centro en un círculo de 300 px y se guarda como PNG (data URL).
+  const fotoInput = document.getElementById("foto-input");
+  const fotoThumb = document.getElementById("foto-thumb");
+  const fotoQuitar = document.getElementById("foto-quitar");
+  function renderFoto() {
+    fotoThumb.style.backgroundImage = state.foto ? `url("${state.foto}")` : "";
+    fotoThumb.classList.toggle("has", !!state.foto);
+    fotoQuitar.hidden = !state.foto;
+  }
+  fotoInput.addEventListener("change", () => {
+    const file = fotoInput.files && fotoInput.files[0];
+    if (!file) return;
+    const img = new Image();
+    img.onload = () => {
+      const size = 300;
+      const c = document.createElement("canvas");
+      c.width = c.height = size;
+      const ctx = c.getContext("2d");
+      ctx.beginPath();
+      ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+      ctx.clip();
+      const side = Math.min(img.width, img.height);
+      ctx.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, size, size);
+      state.foto = c.toDataURL("image/png");
+      URL.revokeObjectURL(img.src);
+      fotoInput.value = "";
+      save();
+      renderFoto();
+      renderPreview();
+    };
+    img.onerror = () => showToast("No se pudo leer la imagen");
+    img.src = URL.createObjectURL(file);
+  });
+  fotoQuitar.addEventListener("click", () => {
+    state.foto = "";
+    save();
+    renderFoto();
+    renderPreview();
+  });
+
   // Exportación
   const toast = document.getElementById("toast");
   function showToast(msg) {
@@ -378,6 +447,7 @@
   if (!state.experiencia.length) state.experiencia.push({ ...SCHEMAS.experiencia.empty });
   if (!state.educacion.length) state.educacion.push({ ...SCHEMAS.educacion.empty });
   fillStatic();
+  renderFoto();
   ["experiencia", "educacion", "idiomas", "secciones"].forEach(renderList);
   renderPreview();
 })();

@@ -1,9 +1,10 @@
 # Creador de CV
 
 App web para crear un currículum vitae con un formulario, elegir el formato
-(Clásico, Moderno, Minimalista, Ejecutivo, Elegante, Corporativo o Compacto) y descargarlo en PDF o Word.
+(Clásico, Moderno, Minimalista, Ejecutivo, Elegante, Corporativo, Compacto, Lateral o Lateral claro) y descargarlo en PDF o Word.
 
-Las habilidades se pueden mostrar como lista, etiquetas, columnas, barras de nivel o puntos de nivel.
+Las plantillas Lateral usan dos columnas y pueden llevar foto de perfil.
+Las habilidades se pueden mostrar como lista, etiquetas, columnas, barras, puntos o estrellas de nivel.
 Se pueden agregar secciones personalizadas (lista, párrafo o entradas con fecha) y reordenarlas.
 El nivel de una habilidad va después de dos puntos (`Excel: 4`, `SQL: Avanzado`), del 1 al 5 o Básico / Intermedio / Avanzado / Experto.
 

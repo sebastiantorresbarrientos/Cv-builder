@@ -67,6 +67,16 @@
             <span class="tpl-box tpl-compacto"><i></i><i></i><i></i></span>
             <strong>Compacto</strong>
           </label>
+          <label class="tpl">
+            <input type="radio" name="plantilla" value="lateral" />
+            <span class="tpl-box tpl-lateral"><i></i><i></i><i></i></span>
+            <strong>Lateral</strong>
+          </label>
+          <label class="tpl">
+            <input type="radio" name="plantilla" value="lateralclaro" />
+            <span class="tpl-box tpl-lateralclaro"><i></i><i></i><i></i></span>
+            <strong>Lateral claro</strong>
+          </label>
         </div>
       </section>
 
@@ -80,6 +90,16 @@
           <label>Ubicación<input name="ubicacion" placeholder="Ciudad, País" /></label>
           <label>LinkedIn<input name="linkedin" placeholder="linkedin.com/in/..." /></label>
           <label class="full">Sitio web / portafolio<input name="web" /></label>
+        </div>
+        <div class="foto-field">
+          <span id="foto-thumb" class="foto-thumb" aria-hidden="true"></span>
+          <div>
+            <div class="foto-actions">
+              <label class="btn-file">Subir foto<input type="file" id="foto-input" accept="image/png,image/jpeg" /></label>
+              <button type="button" id="foto-quitar" class="remove" hidden>Quitar</button>
+            </div>
+            <p class="hint">Opcional. Se muestra en las plantillas Lateral y Lateral claro.</p>
+          </div>
         </div>
       </section>
 
@@ -106,9 +126,10 @@
           <label class="sk"><input type="radio" name="estiloHabilidades" value="columnas" /><span><b class="sk-ico sk-columnas"></b>Columnas</span></label>
           <label class="sk"><input type="radio" name="estiloHabilidades" value="barras" /><span><b class="sk-ico sk-barras"></b>Barras de nivel</span></label>
           <label class="sk"><input type="radio" name="estiloHabilidades" value="puntos" /><span><b class="sk-ico sk-puntos"></b>Puntos de nivel</span></label>
+          <label class="sk"><input type="radio" name="estiloHabilidades" value="estrellas" /><span><b class="sk-ico sk-estrellas">★</b>Estrellas</span></label>
         </div>
         <label>Separadas por coma o salto de línea<textarea name="habilidades" rows="3" placeholder="Excel: Avanzado, Liderazgo: 5, Python: 3"></textarea></label>
-        <p class="hint">Para barras o puntos, agrega el nivel después de dos puntos: un número del 1 al 5 o Básico, Intermedio, Avanzado, Experto. Sin nivel se muestra en 3.</p>
+        <p class="hint">Para barras, puntos o estrellas, agrega el nivel después de dos puntos: un número del 1 al 5 o Básico, Intermedio, Avanzado, Experto. Sin nivel se muestra en 3.</p>
       </section>
 
       <section class="card">
