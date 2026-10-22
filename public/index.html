@@ -4,11 +4,20 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Creador de CV</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header class="topbar">
-    <h1>Creador de CV</h1>
+    <div class="brand">
+      <span class="logo" aria-hidden="true">CV</span>
+      <div>
+        <h1>Creador de CV</h1>
+        <p class="tagline">Completa, elige un formato y descarga</p>
+      </div>
+    </div>
     <div class="actions">
       <button type="button" id="btn-limpiar" class="ghost">Limpiar</button>
       <button type="button" id="btn-pdf" class="primary">Descargar PDF</button>
@@ -84,7 +93,7 @@
     </form>
 
     <aside class="preview-wrap">
-      <div class="preview-title">Vista previa</div>
+      <div class="preview-title"><span class="dot"></span>Vista previa en vivo</div>
       <div id="preview" class="paper tpl-clasico"></div>
     </aside>
   </main>
