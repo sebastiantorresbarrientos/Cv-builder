@@ -32,6 +32,44 @@
         <label>Detalles (opcional, uno por línea)<textarea data-k="descripcion" rows="2">${esc(d.descripcion)}</textarea></label>
         <div class="row"><span></span><button type="button" class="remove">Quitar</button></div>`,
     },
+    secciones: {
+      empty: { titulo: "", tipo: "lista", contenido: "", items: [] },
+      render: (d, idx, total) => `
+        <div class="grid">
+          <label>Título de la sección<input data-k="titulo" placeholder="Proyectos, Voluntariado, Publicaciones..." value="${esc(d.titulo)}" /></label>
+          <label>Tipo de contenido
+            <select data-k="tipo">
+              <option value="lista" ${d.tipo === "lista" ? "selected" : ""}>Lista de puntos</option>
+              <option value="texto" ${d.tipo === "texto" ? "selected" : ""}>Párrafo de texto</option>
+              <option value="entradas" ${d.tipo === "entradas" ? "selected" : ""}>Entradas con fecha</option>
+            </select>
+          </label>
+        </div>
+        ${
+          d.tipo === "entradas"
+            ? `<div class="sub-list">${(d.items || []).map((e, j) => `
+                <div class="sub-item" data-entry="${j}">
+                  <div class="grid">
+                    <label>Título<input data-k="titulo" value="${esc(e.titulo)}" /></label>
+                    <label>Organización / detalle<input data-k="subtitulo" value="${esc(e.subtitulo)}" /></label>
+                    <label>Desde<input data-k="desde" value="${esc(e.desde)}" /></label>
+                    <label>Hasta<input data-k="hasta" value="${esc(e.hasta)}" /></label>
+                  </div>
+                  <label>Descripción (uno por línea)<textarea data-k="descripcion" rows="2">${esc(e.descripcion)}</textarea></label>
+                  <div class="row"><span></span><button type="button" class="remove-entry">Quitar entrada</button></div>
+                </div>`).join("")}
+              </div>
+              <button type="button" class="add" data-add-entry>+ Agregar entrada</button>`
+            : `<label>${d.tipo === "texto" ? "Texto" : "Un punto por línea"}<textarea data-k="contenido" rows="3">${esc(d.contenido)}</textarea></label>`
+        }
+        <div class="row">
+          <span class="move">
+            <button type="button" class="icon" data-move="-1" ${idx === 0 ? "disabled" : ""} aria-label="Subir sección">↑</button>
+            <button type="button" class="icon" data-move="1" ${idx === total - 1 ? "disabled" : ""} aria-label="Bajar sección">↓</button>
+          </span>
+          <button type="button" class="remove">Quitar sección</button>
+        </div>`,
+    },
     idiomas: {
       empty: { idioma: "", nivel: "" },
       render: (d) => `
@@ -48,7 +86,7 @@
     estiloHabilidades: "lista",
     nombre: "", titulo: "", email: "", telefono: "", ubicacion: "", linkedin: "", web: "",
     resumen: "", habilidades: "", adicional: "",
-    experiencia: [], educacion: [], idiomas: [],
+    experiencia: [], educacion: [], idiomas: [], secciones: [],
   };
 
   function esc(s) {
@@ -162,6 +200,23 @@
     if (idi.length) {
       html += `<h3>Idiomas</h3><p>${idi.map((i) => esc(i.idioma) + (i.nivel ? ` (${esc(i.nivel)})` : "")).join(" &nbsp;·&nbsp; ")}</p>`;
     }
+    state.secciones.forEach((sec) => {
+      const titulo = String(sec.titulo || "").trim();
+      if (!titulo) return;
+      if (sec.tipo === "entradas") {
+        const items = (sec.items || []).filter((e) => e.titulo || e.subtitulo);
+        if (!items.length) return;
+        html += `<h3>${esc(titulo)}</h3>`;
+        items.forEach((e) => {
+          html += `<div class="e-head">${esc(e.titulo)}<span>${esc(range(e.desde, e.hasta, false))}</span></div>`;
+          if (e.subtitulo) html += `<div class="e-sub">${esc(e.subtitulo)}</div>`;
+          html += bulletList(e.descripcion);
+        });
+      } else if (String(sec.contenido || "").trim()) {
+        html += `<h3>${esc(titulo)}</h3>`;
+        html += sec.tipo === "texto" ? `<p>${esc(sec.contenido.trim())}</p>` : bulletList(sec.contenido);
+      }
+    });
     if (state.adicional.trim()) html += `<h3>Información adicional</h3>${bulletList(state.adicional)}`;
 
     preview.innerHTML = html;
@@ -175,7 +230,7 @@
       div.className = "item";
       div.dataset.list = name;
       div.dataset.idx = idx;
-      div.innerHTML = SCHEMAS[name].render(data);
+      div.innerHTML = SCHEMAS[name].render(data, idx, state[name].length);
       host.appendChild(div);
     });
   }
@@ -196,7 +251,14 @@
       const idx = Number(item.dataset.idx);
       const k = el.dataset.k;
       if (!k) return;
-      if (el.type === "checkbox") {
+      const sub = el.closest(".sub-item");
+      if (sub) {
+        state[list][idx].items[Number(sub.dataset.entry)][k] = el.value;
+      } else if (list === "secciones" && k === "tipo") {
+        state[list][idx].tipo = el.value;
+        if (el.value === "entradas" && !state[list][idx].items.length) state[list][idx].items.push(emptyEntry());
+        renderList(list);
+      } else if (el.type === "checkbox") {
         state[list][idx][k] = el.checked;
         const hasta = item.querySelector('[data-k="hasta"]');
         if (hasta) hasta.disabled = el.checked;
@@ -212,11 +274,38 @@
     renderPreview();
   });
 
+  function emptyEntry() {
+    return { titulo: "", subtitulo: "", desde: "", hasta: "", descripcion: "" };
+  }
+
   form.addEventListener("click", (e) => {
+    const sec = e.target.closest('.item[data-list="secciones"]');
+    if (sec) {
+      const i = Number(sec.dataset.idx);
+      const s = state.secciones[i];
+      let changed = true;
+      if (e.target.closest("[data-add-entry]")) {
+        s.items.push(emptyEntry());
+      } else if (e.target.closest(".remove-entry")) {
+        s.items.splice(Number(e.target.closest(".sub-item").dataset.entry), 1);
+      } else if (e.target.closest("[data-move]")) {
+        const j = i + Number(e.target.closest("[data-move]").dataset.move);
+        if (j < 0 || j >= state.secciones.length) return;
+        [state.secciones[i], state.secciones[j]] = [state.secciones[j], s];
+      } else {
+        changed = false;
+      }
+      if (changed) {
+        renderList("secciones");
+        save();
+        renderPreview();
+        return;
+      }
+    }
     const add = e.target.closest("[data-add]");
     if (add) {
       const name = add.dataset.add;
-      state[name].push({ ...SCHEMAS[name].empty });
+      state[name].push(JSON.parse(JSON.stringify(SCHEMAS[name].empty)));
       renderList(name);
       save();
       const last = document.querySelector(`#list-${name} .item:last-child input`);
@@ -289,6 +378,6 @@
   if (!state.experiencia.length) state.experiencia.push({ ...SCHEMAS.experiencia.empty });
   if (!state.educacion.length) state.educacion.push({ ...SCHEMAS.educacion.empty });
   fillStatic();
-  ["experiencia", "educacion", "idiomas"].forEach(renderList);
+  ["experiencia", "educacion", "idiomas", "secciones"].forEach(renderList);
   renderPreview();
 })();

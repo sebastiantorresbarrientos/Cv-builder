@@ -4,7 +4,8 @@ App web para crear un currículum vitae con un formulario, elegir el formato
 (Clásico, Moderno, Minimalista, Ejecutivo, Elegante, Corporativo o Compacto) y descargarlo en PDF o Word.
 
 Las habilidades se pueden mostrar como lista, etiquetas, columnas, barras de nivel o puntos de nivel.
-El nivel va después de dos puntos (`Excel: 4`, `SQL: Avanzado`), del 1 al 5 o Básico / Intermedio / Avanzado / Experto.
+Se pueden agregar secciones personalizadas (lista, párrafo o entradas con fecha) y reordenarlas.
+El nivel de una habilidad va después de dos puntos (`Excel: 4`, `SQL: Avanzado`), del 1 al 5 o Básico / Intermedio / Avanzado / Experto.
 
 - Vista previa en vivo mientras escribes.
 - Los datos se guardan en tu navegador (localStorage); el servidor no almacena nada.
