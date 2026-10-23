@@ -135,12 +135,12 @@
     const grid = narrow ? "sk-grid one" : "sk-grid";
     switch (estilo) {
       case "etiquetas":
-        return `<div class="sk-tags">${skills.map((s) => `<span>${esc(s.name)}</span>`).join("")}</div>`;
+        return `<div class="sk-tags">${skills.map((s) => `<span class="fit">${esc(s.name)}</span>`).join("")}</div>`;
       case "columnas":
-        return `<ul class="sk-cols${narrow ? " one" : ""}">${skills.map((s) => `<li>${esc(s.name)}</li>`).join("")}</ul>`;
+        return `<ul class="sk-cols${narrow ? " one" : ""}">${skills.map((s) => `<li class="fit">${esc(s.name)}</li>`).join("")}</ul>`;
       case "barras":
         return `<div class="${grid}">${skills
-          .map((s) => `<div class="sk-bar"><div>${esc(s.name)}</div><i><b style="width:${lvl(s) * 20}%"></b></i></div>`)
+          .map((s) => `<div class="sk-bar"><div class="fit">${esc(s.name)}</div><i><b style="width:${lvl(s) * 20}%"></b></i></div>`)
           .join("")}</div>`;
       case "puntos":
       case "estrellas":
@@ -151,11 +151,11 @@
             for (let d = 0; d < 5; d++) {
               marks += estilo === "estrellas" ? `<i class="${d < n ? "on" : ""}">★</i>` : `<b class="${d < n ? "on" : ""}"></b>`;
             }
-            return `<div class="sk-dots"><span>${esc(s.name)}</span><span class="marks">${marks}</span></div>`;
+            return `<div class="sk-dots"><span class="fit">${esc(s.name)}</span><span class="marks">${marks}</span></div>`;
           })
           .join("")}</div>`;
       default:
-        if (narrow) return `<ul>${skills.map((s) => `<li>${esc(s.name)}</li>`).join("")}</ul>`;
+        if (narrow) return `<ul>${skills.map((s) => `<li class="fit">${esc(s.name)}</li>`).join("")}</ul>`;
         return `<p>${skills.map((s) => esc(s.name)).join(" &nbsp;·&nbsp; ")}</p>`;
     }
   }
@@ -239,17 +239,34 @@
     if (sidebar) {
       let side = "";
       if (state.foto) side += `<img class="photo" src="${esc(state.foto)}" alt="" />`;
-      if (contacto.length) side += `<h3>Contacto</h3>${contacto.map((c) => `<div class="c-line">${esc(c)}</div>`).join("")}`;
+      if (contacto.length) side += `<h3>Contacto</h3>${contacto.map((c) => `<div class="c-line fit">${esc(c)}</div>`).join("")}`;
       if (skills.length) side += `<h3>Habilidades</h3>${skillsHtml(skills, state.estiloHabilidades, true)}`;
       if (idi.length) {
         side += `<h3>Idiomas</h3>${idi
-          .map((i) => `<div class="lang"><b>${esc(i.idioma)}</b>${i.nivel ? `<span>${esc(i.nivel)}</span>` : ""}</div>`)
+          .map((i) => `<div class="lang"><b class="fit">${esc(i.idioma)}</b>${i.nivel ? `<span class="fit">${esc(i.nivel)}</span>` : ""}</div>`)
           .join("")}`;
       }
       html = `<div class="cols"><aside class="side">${side}</aside><div class="main">${html}</div></div>`;
     }
     preview.innerHTML = html;
+    fitSideText();
     fitPreview();
+  }
+
+  // En la barra lateral, el texto largo se achica para caber en una línea (igual que en el PDF y el Word).
+  function fitSideText() {
+    preview.querySelectorAll(".side .fit").forEach((el) => {
+      el.style.fontSize = "";
+      el.classList.remove("wrap");
+      let size = parseFloat(getComputedStyle(el).fontSize);
+      const min = 6;
+      while (el.scrollWidth > el.clientWidth + 0.5 && size > min) {
+        size -= 0.5;
+        el.style.fontSize = size + "px";
+      }
+      // Si ni con la letra mínima cabe, se divide en líneas.
+      if (el.scrollWidth > el.clientWidth + 0.5) el.classList.add("wrap");
+    });
   }
 
   // Escala la hoja (ancho fijo de 600 px) al ancho disponible del panel.

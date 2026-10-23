@@ -287,7 +287,16 @@ select { appearance: none; -webkit-appearance: none; padding-right: 32px;
 .paper .main { padding: 26px 24px; }
 .paper .side h3 { border-bottom: 1px solid currentColor; padding-bottom: 2px; font-size: 11.5px; }
 .paper .side .photo { display: block; width: 96px; height: 96px; margin: 0 auto 6px; border-radius: 50%; }
-.paper .side .c-line { font-size: 11px; margin-bottom: 2px; overflow-wrap: anywhere; }
+.paper .side .c-line { font-size: 11px; margin-bottom: 2px; }
+.paper .side .fit { display: block; white-space: nowrap; overflow: hidden; min-width: 0; max-width: 100%; }
+.paper .side li.fit { display: list-item; list-style-position: inside; }
+.paper .side ul:has(> li.fit) { padding-left: 2px; }
+.paper .side .sk-dots .fit { flex: 1; }
+.paper .side .sk-tags .fit { display: inline-block; }
+.paper .side .fit.wrap { white-space: normal; overflow-wrap: anywhere; }
+.paper .side .sk-grid.one { grid-template-columns: minmax(0, 1fr); }
+.paper .side .sk-dots b { width: 6px; height: 6px; margin-left: 2px; }
+.paper .side .sk-dots i { font-size: 11px; }
 .paper .side .lang { margin-bottom: 4px; }
 .paper .side .lang span { display: block; font-size: 11px; opacity: .8; }
 .paper .side ul { padding-left: 14px; }
