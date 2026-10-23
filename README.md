@@ -32,6 +32,7 @@ pago aprobado, que el servidor verifica. Un pago habilita PDF y Word durante 24 
 | `PRECIO` | `1900` | Precio por descarga |
 | `MONEDA` | `CLP` | Moneda de la cuenta de Mercado Pago |
 | `VIGENCIA_HORAS` | `24` | Horas que dura un pago |
+| `CONTACTO_EMAIL` | — | Correo de contacto que aparece en términos y privacidad |
 | `PAYPAL_CLIENT_ID` / `PAYPAL_SECRET` | (vacías) | Credenciales Live de una app REST de PayPal; activan PayPal |
 | `PAYPAL_PRECIO` | `2` | Precio en PayPal |
 | `PAYPAL_MONEDA` | `USD` | Moneda en PayPal |
