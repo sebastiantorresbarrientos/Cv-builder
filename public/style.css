@@ -372,6 +372,7 @@ select { appearance: none; -webkit-appearance: none; padding-right: 32px;
 .modal-card button.pay b { font-weight: 700; }
 .modal-card button.pp { background: #ffc439; border-color: #ffc439; color: #111; }
 .modal-card button.pp:hover { background: #f2b52e; border-color: #f2b52e; }
+.modal-card button.gratis { margin-bottom: 4px; border: 1px solid var(--line); }
 .modal-card .hint { margin-top: 8px; }
 
 /* ---------- Aviso ---------- */
