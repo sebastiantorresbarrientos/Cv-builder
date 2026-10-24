@@ -3,6 +3,7 @@ const path = require("path");
 const { buildPdf } = require("./lib/pdf");
 const { buildDocx } = require("./lib/docx");
 const pagos = require("./lib/pagos");
+const importador = require("./lib/importar");
 
 const app = express();
 app.set("trust proxy", true);
@@ -20,7 +21,27 @@ function fileName(cv) {
   return `CV_${base || "curriculum"}`;
 }
 
-app.get("/api/config", (_req, res) => res.json(pagos.config()));
+app.get("/api/config", (_req, res) => res.json({ ...pagos.config(), importar: importador.activo() }));
+
+// Recibe el archivo tal cual (PDF o Word) y devuelve los campos del formulario. No se guarda nada.
+app.post(
+  "/api/importar",
+  express.raw({ type: () => true, limit: importador.MAX_BYTES }),
+  async (req, res) => {
+    if (!importador.activo()) return res.status(400).json({ error: "La importación no está activada" });
+    if (!Buffer.isBuffer(req.body) || !req.body.length) return res.status(400).json({ error: "No llegó ningún archivo" });
+    if (!importador.permitido(req.ip)) {
+      return res.status(429).json({ error: "Alcanzaste el límite de importaciones por hora. Intenta más tarde." });
+    }
+    try {
+      res.json(await importador.importar(req.body));
+    } catch (err) {
+      if (err.status === 415) return res.status(415).json({ error: "Sube un archivo PDF o Word (.docx)" });
+      console.error("Error importando el CV:", err.message);
+      res.status(502).json({ error: "No se pudo leer el CV" });
+    }
+  }
+);
 
 app.post("/api/checkout", async (req, res) => {
   if (!pagos.mpActivo()) return res.status(400).json({ error: "Mercado Pago no está activado" });
@@ -87,6 +108,6 @@ app.get("/health", (_req, res) => res.send("ok"));
 app.listen(PORT, "0.0.0.0", () =>
   console.log(
     `CV Builder escuchando en puerto ${PORT} (Mercado Pago ${pagos.mpActivo() ? "activo" : "inactivo"}, ` +
-      `PayPal ${pagos.ppActivo() ? "activo" : "inactivo"})`
+      `PayPal ${pagos.ppActivo() ? "activo" : "inactivo"}, importar con IA ${importador.activo() ? "activo" : "inactivo"})`
   )
 );

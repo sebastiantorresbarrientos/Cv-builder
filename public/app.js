@@ -540,8 +540,57 @@
 
   const configLista = fetch("/api/config")
     .then((r) => r.json())
-    .then((c) => { pagoConfig = { ...pagoConfig, ...c }; })
+    .then((c) => {
+      pagoConfig = { ...pagoConfig, ...c };
+      document.getElementById("importar-card").hidden = !c.importar;
+    })
     .catch(() => {});
+
+  // Importar un CV existente: el servidor lo lee con IA y devuelve los campos del formulario.
+  const importarInput = document.getElementById("importar-input");
+  const importarBtn = document.getElementById("importar-btn");
+  const tieneDatos = () =>
+    ["nombre", "resumen", "habilidades"].some((k) => state[k].trim()) ||
+    state.experiencia.some((e) => e.cargo || e.empresa);
+  importarInput.addEventListener("change", async () => {
+    const file = importarInput.files && importarInput.files[0];
+    importarInput.value = "";
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) return showToast("El archivo es muy grande (máximo 5 MB)");
+    if (tieneDatos() && !confirm("Esto reemplaza lo que ya escribiste en el formulario. ¿Continuar?")) return;
+    const label = importarBtn.firstChild.textContent;
+    importarBtn.classList.add("busy");
+    importarBtn.firstChild.textContent = "Leyendo tu CV...";
+    showToast("La IA está leyendo tu CV, puede tardar unos segundos...", 60000);
+    try {
+      const res = await fetch("/api/importar", {
+        method: "POST",
+        headers: { "Content-Type": "application/octet-stream" },
+        body: file,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || (res.status === 413 ? "El archivo es muy grande (máximo 5 MB)" : ""));
+      const { experiencia = [], educacion = [], idiomas = [], ...campos } = data;
+      Object.keys(campos).forEach((k) => {
+        if (typeof state[k] === "string" && typeof campos[k] === "string") state[k] = campos[k];
+      });
+      state.experiencia = experiencia.map((e) => ({ ...SCHEMAS.experiencia.empty, ...e }));
+      state.educacion = educacion.map((e) => ({ ...SCHEMAS.educacion.empty, ...e }));
+      state.idiomas = idiomas.map((e) => ({ ...SCHEMAS.idiomas.empty, ...e }));
+      if (!state.experiencia.length) state.experiencia.push({ ...SCHEMAS.experiencia.empty });
+      if (!state.educacion.length) state.educacion.push({ ...SCHEMAS.educacion.empty });
+      save();
+      fillStatic();
+      ["experiencia", "educacion", "idiomas"].forEach(renderList);
+      renderPreview();
+      showToast("¡Listo! Revisa los datos y elige un formato.", 6000);
+    } catch (err) {
+      showToast(err.message || "No se pudo leer el CV. Intenta con otro archivo.", 6000);
+    } finally {
+      importarBtn.classList.remove("busy");
+      importarBtn.firstChild.textContent = label;
+    }
+  });
 
   async function exportar(tipo, btn) {
     if (!state.nombre.trim()) {

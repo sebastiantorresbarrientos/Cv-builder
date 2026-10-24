@@ -209,6 +209,10 @@ select { appearance: none; -webkit-appearance: none; padding-right: 32px;
 .btn-file:hover { background: #dbe3ee; }
 .btn-file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; margin: 0; }
 .btn-file:focus-within { outline: 3px solid #b9c7da; outline-offset: 2px; }
+.btn-file.busy { opacity: .7; pointer-events: none; }
+.card.importar { border-color: var(--brand); }
+.card.importar .btn-file { background: var(--brand); color: #fff; }
+.card.importar .btn-file:hover { background: var(--brand); opacity: .9; }
 .foto-field .hint { margin-top: 6px; }
 .hint { margin: 8px 0 0; font-size: 12px; color: var(--muted); line-height: 1.5; }
 

@@ -39,6 +39,18 @@ pago aprobado, que el servidor verifica. Un pago habilita PDF y Word durante 24 
 | `PUBLIC_URL` | (se deduce) | URL pública del sitio para la vuelta desde Mercado Pago |
 
 
+## Importar un CV con IA
+
+Con `ANTHROPIC_API_KEY` definida aparece la tarjeta **¿Ya tienes un CV?**: el usuario sube un PDF o Word (.docx) y
+Claude lo ordena en los campos del formulario (`POST /api/importar`, en `lib/importar.js`). El archivo se procesa en
+memoria y no se guarda. Sin la variable, la tarjeta no se muestra.
+
+| Variable | Por defecto | Uso |
+| --- | --- | --- |
+| `ANTHROPIC_API_KEY` | (vacía) | API key de https://console.anthropic.com; activa la importación |
+| `IMPORTAR_MODELO` | `claude-haiku-5-5` | Modelo que lee el CV |
+| `IMPORTAR_LIMITE_HORA` | `10` | Importaciones por hora por IP (evita abusos que gasten la API) |
+
 ## Desplegar en Render (plan Free)
 
 1. En https://render.com → **New** → **Blueprint** y elige este repo (usa `render.yaml`).

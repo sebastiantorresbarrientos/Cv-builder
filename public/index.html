@@ -29,6 +29,12 @@
 
   <main class="layout">
     <form id="cv-form" autocomplete="off">
+      <section class="card importar" id="importar-card" hidden>
+        <h2>¿Ya tienes un CV?</h2>
+        <p class="hint hint-top">Súbelo en PDF o Word y la IA llena el formulario por ti, con mejor redacción. Revisa los datos antes de descargar. No guardamos tu archivo.</p>
+        <label class="btn-file" id="importar-btn">Subir mi CV<input type="file" id="importar-input" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" /></label>
+      </section>
+
       <section class="card">
         <h2>Formato</h2>
         <div class="templates" id="templates">
