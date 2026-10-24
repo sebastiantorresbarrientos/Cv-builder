@@ -21,6 +21,14 @@ function fileName(cv) {
   return `CV_${base || "curriculum"}`;
 }
 
+// Texto del pie en las descargas sin pagar, p. ej. "Hecho con cvlisto.cl".
+function marcaAgua(req) {
+  if (!req.marcaAgua) return null;
+  if (process.env.MARCA_AGUA) return process.env.MARCA_AGUA;
+  const host = process.env.PUBLIC_URL ? new URL(process.env.PUBLIC_URL).host : req.get("host");
+  return `Hecho con ${host.replace(/^www\./, "")}`;
+}
+
 app.get("/api/config", (_req, res) => res.json({ ...pagos.config(), importar: importador.activo() }));
 
 // Recibe el archivo tal cual (PDF o Word) y devuelve los campos del formulario. No se guarda nada.
@@ -75,22 +83,24 @@ app.post("/api/paypal/capturar", async (req, res) => {
   }
 });
 
-app.post("/api/export/pdf", pagos.exigirPago, (req, res) => {
+app.post("/api/export/pdf", pagos.verificarPago, (req, res) => {
   try {
     const cv = req.body || {};
+    if (req.marcaAgua) res.setHeader("X-Marca-Agua", "1");
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="${fileName(cv)}.pdf"`);
-    buildPdf(cv, res);
+    buildPdf(cv, res, marcaAgua(req));
   } catch (err) {
     console.error(err);
     if (!res.headersSent) res.status(500).json({ error: "No se pudo generar el PDF" });
   }
 });
 
-app.post("/api/export/docx", pagos.exigirPago, async (req, res) => {
+app.post("/api/export/docx", pagos.verificarPago, async (req, res) => {
   try {
     const cv = req.body || {};
-    const buffer = await buildDocx(cv);
+    const buffer = await buildDocx(cv, marcaAgua(req));
+    if (req.marcaAgua) res.setHeader("X-Marca-Agua", "1");
     res.setHeader(
       "Content-Type",
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document"

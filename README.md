@@ -23,8 +23,9 @@ npm start
 ## Cobro por descarga (Mercado Pago y PayPal)
 
 Cada medio de pago se activa cuando están sus credenciales: `MP_ACCESS_TOKEN` para Mercado Pago (Checkout Pro)
-y `PAYPAL_CLIENT_ID` + `PAYPAL_SECRET` para PayPal (Checkout). Con al menos uno activo, cada descarga exige un
-pago aprobado, que el servidor verifica. Un pago habilita PDF y Word durante 24 horas. Sin credenciales, las descargas son gratis.
+y `PAYPAL_CLIENT_ID` + `PAYPAL_SECRET` para PayPal (Checkout). Con al menos uno activo, la descarga sin pagar sale con una marca de agua discreta al pie
+("Hecho con <dominio>"); un pago aprobado, que el servidor verifica, la quita en PDF y Word durante 24 horas.
+Sin credenciales, las descargas son gratis y sin marca.
 
 | Variable | Por defecto | Uso |
 | --- | --- | --- |
@@ -36,7 +37,8 @@ pago aprobado, que el servidor verifica. Un pago habilita PDF y Word durante 24 
 | `PAYPAL_CLIENT_ID` / `PAYPAL_SECRET` | (vacías) | Credenciales Live de una app REST de PayPal; activan PayPal |
 | `PAYPAL_PRECIO` | `2` | Precio en PayPal |
 | `PAYPAL_MONEDA` | `USD` | Moneda en PayPal |
-| `PUBLIC_URL` | (se deduce) | URL pública del sitio para la vuelta desde Mercado Pago |
+| `PUBLIC_URL` | (se deduce) | URL pública del sitio para la vuelta desde Mercado Pago y el dominio de la marca de agua |
+| `MARCA_AGUA` | `Hecho con <dominio>` | Texto de la marca de agua en las descargas sin pagar |
 
 
 ## Importar un CV con IA

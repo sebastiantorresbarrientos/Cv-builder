@@ -475,7 +475,10 @@
     if (moneda === "USD") return `US$${Number(precio).toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
     return `${precio} ${moneda}`;
   }
-  function openPayModal() {
+  let pendiente = null; // descarga que espera la decisión del modal: { tipo, btn }
+  function openPayModal(descarga) {
+    pendiente = descarga || null;
+    document.getElementById("btn-gratis").hidden = !pendiente;
     const { mercadopago, paypal } = pagoConfig;
     btnMp.hidden = !mercadopago;
     btnPp.hidden = !paypal;
@@ -609,6 +612,12 @@
     }
   });
 
+  document.getElementById("btn-gratis").addEventListener("click", () => {
+    const d = pendiente;
+    closePayModal();
+    if (d) descargar(d.tipo, d.btn, null);
+  });
+
   async function exportar(tipo, btn) {
     if (!state.nombre.trim()) {
       showToast("Escribe al menos tu nombre antes de descargar");
@@ -618,9 +627,14 @@
     await configLista;
     const pagoId = getPago();
     if (pagoConfig.pago && !pagoId) {
-      openPayModal();
+      openPayModal({ tipo, btn });
       return;
     }
+    descargar(tipo, btn, pagoId);
+  }
+
+  // Sin pagoId válido el servidor entrega el archivo con marca de agua.
+  async function descargar(tipo, btn, pagoId) {
     const label = btn.textContent;
     btn.disabled = true;
     btn.textContent = "Generando...";
@@ -630,13 +644,11 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...state, pagoId }),
       });
-      if (res.status === 402) {
-        setPago(null);
-        await configLista;
-        openPayModal();
-        return;
-      }
       if (!res.ok) throw new Error("Error " + res.status);
+      if (pagoId && res.headers.get("X-Marca-Agua")) {
+        setPago(null);
+        showToast("Tu pago ya no está vigente, así que el archivo salió con marca de agua.", 6000);
+      }
       const blob = await res.blob();
       const cd = res.headers.get("Content-Disposition") || "";
       const m = /filename="([^"]+)"/.exec(cd);
