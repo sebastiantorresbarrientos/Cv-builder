@@ -266,31 +266,43 @@
     });
   }
 
-  // Si el CV no cabe en una hoja A4 (848 px de alto a este ancho), marca dónde empieza cada página.
+  // Si el CV no cabe en una hoja A4 (842 px de alto, como el A4 en puntos), marca dónde empieza cada página.
   // Igual que en el PDF, un ítem que no cabe al final de una hoja pasa entero a la siguiente
   // (con su título de sección si es el primero); aquí se simula con un espacio antes del ítem.
-  const PAGE_HEIGHT = 848;
-  const PAGE_PAD = 32;
+  const PAGE_HEIGHT = 842;
   function topIn(el) {
     let y = 0;
     for (let n = el; n && n !== preview; n = n.offsetParent) y += n.offsetTop;
     return y;
   }
   function markPages() {
+    // Margen superior e inferior de cada hoja, igual que en el PDF.
+    const PAGE_PAD = preview.querySelector(".main") ? 44 : 48;
     const prev = preview.querySelectorAll(".pb-spacer");
     const prevKey = [...prev].map((s) => s.style.height).join();
     prev.forEach((s) => s.remove());
-    preview.querySelectorAll(".entry").forEach((el) => {
-      const top = topIn(el);
-      const bottom = top + el.offsetHeight;
-      const limit = Math.ceil((top + 1) / PAGE_HEIGHT) * PAGE_HEIGHT - PAGE_PAD;
-      if (bottom <= limit || el.offsetHeight > PAGE_HEIGHT - 2 * PAGE_PAD) return;
-      const h3 = el.previousElementSibling && el.previousElementSibling.tagName === "H3" ? el.previousElementSibling : null;
-      const target = h3 || el;
+    const addSpacer = (before, top, limit) => {
       const spacer = document.createElement("div");
       spacer.className = "pb-spacer";
-      spacer.style.height = Math.max(0, limit + 2 * PAGE_PAD - topIn(target)) + "px";
-      target.before(spacer);
+      spacer.style.height = Math.max(0, limit + 2 * PAGE_PAD - top) + "px";
+      before.before(spacer);
+    };
+    // En orden: cada espacio agregado corre lo que viene después.
+    preview.querySelectorAll(".main h3, .paper > h3, .entry").forEach((el) => {
+      const top = topIn(el);
+      const limit = Math.ceil((top + 1) / PAGE_HEIGHT) * PAGE_HEIGHT - PAGE_PAD;
+      if (el.tagName === "H3") {
+        // Un título sin ítems debajo (perfil, habilidades…) necesita 48 px libres, como en el PDF.
+        const next = el.nextElementSibling;
+        if (next && next.classList.contains("entry")) return;
+        if (top + 48 > limit) addSpacer(el, top, limit);
+        return;
+      }
+      const h = el.offsetHeight - 5.8; // sin el espacio inferior del ítem, como en el PDF
+      if (top + h <= limit || h > PAGE_HEIGHT - 2 * PAGE_PAD) return;
+      const h3 = el.previousElementSibling && el.previousElementSibling.tagName === "H3" ? el.previousElementSibling : null;
+      const target = h3 || el;
+      addSpacer(target, topIn(target), limit);
     });
     const pages = Math.max(1, Math.ceil(preview.scrollHeight / PAGE_HEIGHT - 0.02));
     const marks = preview.querySelectorAll(".page-break");

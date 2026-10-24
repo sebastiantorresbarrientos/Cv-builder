@@ -235,7 +235,7 @@ select { appearance: none; -webkit-appearance: none; padding-right: 32px;
 .preview-stage { display: flex; justify-content: center; align-items: flex-start; overflow: hidden; min-width: 0; }
 .preview-wrap, #cv-form { min-width: 0; }
 .paper {
-  flex: none; width: 600px; min-height: 848px; transform-origin: top center;
+  flex: none; width: 595px; min-height: 842px; transform-origin: top center;
   background: #fff; border-radius: 6px;
   box-shadow: 0 1px 3px rgba(23, 32, 51, .08), 0 18px 40px rgba(23, 32, 51, .14);
   padding: 32px 34px; font-size: 12.5px; line-height: 1.45; color: #1a1a1a; overflow: hidden;
@@ -264,40 +264,40 @@ select { appearance: none; -webkit-appearance: none; padding-right: 32px;
 .paper .side p, .paper .side li { text-align: left; }
 .paper .empty { color: #9ca3af; }
 
-.paper.tpl-clasico { font-family: Helvetica, Arial, sans-serif; }
+.paper.tpl-clasico { font-family: Helvetica, Arial, Arimo, sans-serif; }
 .paper.tpl-clasico h1, .paper.tpl-clasico h3 { color: #1f3a5f; }
 .paper.tpl-clasico h3 { border-bottom: 1.5px solid #1f3a5f; padding-bottom: 2px; }
 
-.paper.tpl-moderno { font-family: Helvetica, Arial, sans-serif; padding-top: 0; }
+.paper.tpl-moderno { font-family: Helvetica, Arial, Arimo, sans-serif; padding-top: 0; }
 .paper.tpl-moderno .head { background: #0f766e; color: #fff; margin: 0 -34px 6px; padding: 26px 34px 20px; }
 .paper.tpl-moderno .head .sub { color: #d1fae5; }
 .paper.tpl-moderno h3 { color: #0f766e; border-left: 4px solid #0f766e; padding-left: 8px; }
 
-.paper.tpl-minimalista { font-family: Georgia, "Times New Roman", serif; }
+.paper.tpl-minimalista { font-family: "Times New Roman", Times, Tinos, serif; }
 .paper.tpl-minimalista .head { text-align: center; }
 .paper.tpl-minimalista h1 { color: #222; font-size: 22px; }
 .paper.tpl-minimalista h3 { color: #222; letter-spacing: .18em; }
 
-.paper.tpl-ejecutivo { font-family: Helvetica, Arial, sans-serif; padding-top: 0; }
+.paper.tpl-ejecutivo { font-family: Helvetica, Arial, Arimo, sans-serif; padding-top: 0; }
 .paper.tpl-ejecutivo .head { background: #1e293b; color: #fff; margin: 0 -34px 6px; padding: 26px 34px 20px; }
 .paper.tpl-ejecutivo .head .sub { color: #cbd5e1; }
 .paper.tpl-ejecutivo h3 { color: #1e293b; border-bottom: 1.5px solid #1e293b; padding-bottom: 2px; }
 
-.paper.tpl-elegante { font-family: Georgia, "Times New Roman", serif; }
+.paper.tpl-elegante { font-family: "Times New Roman", Times, Tinos, serif; }
 .paper.tpl-elegante .head { text-align: center; }
 .paper.tpl-elegante h1, .paper.tpl-elegante h3 { color: #7f1d1d; }
 .paper.tpl-elegante h3 { border-bottom: 1px solid #7f1d1d; padding-bottom: 2px; }
 
-.paper.tpl-corporativo { font-family: Helvetica, Arial, sans-serif; }
+.paper.tpl-corporativo { font-family: Helvetica, Arial, Arimo, sans-serif; }
 .paper.tpl-corporativo h1 { color: #1e40af; }
 .paper.tpl-corporativo h3 { color: #1e40af; border-left: 4px solid #1e40af; padding-left: 8px; }
 
-.paper.tpl-compacto { font-family: Helvetica, Arial, sans-serif; }
+.paper.tpl-compacto { font-family: Helvetica, Arial, Arimo, sans-serif; }
 .paper.tpl-compacto h1 { color: #374151; font-size: 22px; }
 .paper.tpl-compacto h3 { color: #374151; background: #eceef1; padding: 3px 7px; }
 
-.paper.tpl-lateral, .paper.tpl-lateralclaro { font-family: Helvetica, Arial, sans-serif; padding: 0; }
-.paper .cols { display: grid; grid-template-columns: 32% 1fr; min-height: 848px; }
+.paper.tpl-lateral, .paper.tpl-lateralclaro { font-family: Helvetica, Arial, Arimo, sans-serif; padding: 0; }
+.paper .cols { display: grid; grid-template-columns: 32% 1fr; min-height: 842px; }
 .paper .cols > * { min-width: 0; }
 .paper .side { padding: 22px 16px; }
 .paper .main { padding: 26px 24px; }
@@ -350,6 +350,63 @@ select { appearance: none; -webkit-appearance: none; padding-right: 32px;
 .paper .sk-dots .marks { white-space: nowrap; }
 .paper .sk-dots i { font-style: normal; color: var(--track, #e5e7eb); font-size: 12px; margin-left: 1px; }
 .paper .sk-dots i.on { color: var(--acc); }
+
+/* ---------- Proporciones iguales al PDF ----------
+   La hoja mide 595 × 842 px, igual que el A4 en puntos, así que 1 pt del PDF = 1 px aquí.
+   Arimo y Tinos tienen las mismas medidas que Helvetica y Times: se usan donde esas no existen (Android).
+   Márgenes, tamaños de letra e interlineado copian lib/pdf.js para que el texto
+   corte en las mismas líneas y las páginas salgan iguales. */
+/* Interlineado de cada letra en el PDF (pdfkit): normal, negrita y cursiva. */
+.paper { --lh: 1.156; --lh-b: 1.19; --lh-i: 1.156; padding: 48px 52px; font-size: 10px; line-height: var(--lh); }
+.paper.tpl-minimalista, .paper.tpl-elegante { --lh: 1.116; --lh-b: 1.153; --lh-i: 1.1; }
+.paper h1, .paper h3, .paper .e-head, .paper .side .lang b { line-height: var(--lh-b) !important; }
+.paper .e-sub { line-height: var(--lh-i); }
+.paper p { margin: 0; white-space: pre-line; }
+.paper h1 { font-size: 24px; }
+.paper.tpl-moderno h1, .paper.tpl-ejecutivo h1, .paper.tpl-elegante h1,
+.paper.tpl-lateral h1, .paper.tpl-lateralclaro h1 { font-size: 26px; }
+.paper.tpl-minimalista h1, .paper.tpl-compacto h1 { font-size: 22px; }
+.paper .sub { font-size: 12px; }
+.paper .contact { margin-top: 3.5px; font-size: 9.5px; }
+.paper.paper h3, .paper.paper .main h3, .paper.paper .side h3 {
+  margin-top: 9.25px; font-size: 11px; letter-spacing: 0; padding-bottom: 1px;
+}
+.paper.paper h3, .paper.paper .main h3, .paper.paper .side h3 { border-bottom-width: .8px !important; margin-bottom: 3.44px; }
+/* Título con barra a la izquierda (sin línea inferior) y título simple: mismo alto que en el PDF. */
+.paper.tpl-moderno h3, .paper.tpl-corporativo h3, .paper.tpl-lateralclaro .main h3 { padding-bottom: 0; margin-bottom: 5.24px; }
+.paper.tpl-elegante h3 { margin-bottom: 3.27px; }
+.paper.tpl-minimalista h3 { font-size: 10.5px; letter-spacing: 2px; padding-bottom: 0; margin-bottom: 4.84px; }
+.paper.tpl-compacto h3 { font-size: 10.5px; letter-spacing: .5px; padding: 4px 7px 1.5px; margin: 6.25px 0 6.85px; }
+.paper .e-head { font-size: 10.5px; gap: 5px; }
+.paper .e-head span { font-size: 9.5px; }
+.paper .e-sub { font-size: 10px; }
+.paper .entry { padding-bottom: 5.8px; } /* padding y no margin: en el PDF este espacio se suma al del título siguiente */
+.paper ul { margin: 0; padding-left: 0; list-style: none; }
+.paper li { position: relative; margin-top: 1px; padding-left: 16px; }
+.paper li::before { content: "•"; position: absolute; left: 6px; }
+.paper .sk-cols, .paper .side ul { padding-left: 0; }
+.paper .sk-cols li, .paper .side li { padding-left: 11px; }
+.paper .sk-cols li::before, .paper .side li::before { left: 1px; color: var(--acc); }
+.paper .sk-tags span { font-size: 9.5px; }
+
+/* Bandas de color de moderno y ejecutivo: 128 pt de alto, el nombre parte a 34 pt. */
+.paper.tpl-moderno .head, .paper.tpl-ejecutivo .head {
+  margin: -48px -52px 0; padding: 34px 52px 10px; min-height: 128px; box-sizing: border-box;
+}
+/* En el PDF el cuerpo parte 4 pt bajo la banda y el título deja 8,8 pt más. */
+.paper.tpl-moderno .head + h3, .paper.tpl-ejecutivo .head + h3 { margin-top: 12.79px; }
+.paper.tpl-moderno, .paper.tpl-ejecutivo { padding-top: 48px; }
+
+/* Plantillas con barra lateral: barra de 190 pt; márgenes 40/22 en la barra y 44/28/40 en el cuerpo. */
+.paper.tpl-lateral, .paper.tpl-lateralclaro { padding: 0; }
+.paper .cols { grid-template-columns: 190px 1fr; }
+.paper .side { padding: 40px 22px; }
+.paper .main { padding: 44px 40px 44px 28px; }
+.paper .main .sub { margin-top: 2px; font-size: 12.5px; }
+.paper .side .c-line { font-size: 9.5px; margin: 2px 0 0; }
+.paper .side .lang { margin: 2px 0 0; }
+.paper .side .lang b { font-size: 10px; }
+.paper .side .lang span { font-size: 9.5px; opacity: 1; }
 
 /* ---------- Ventana de pago ---------- */
 .modal {
