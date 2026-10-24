@@ -317,6 +317,12 @@
     const prev = preview.querySelectorAll(".pb-spacer");
     const prevKey = [...prev].map((s) => s.style.height).join();
     prev.forEach((s) => s.remove());
+    const prevLi = preview.querySelectorAll(".pb-li");
+    const prevLiKey = [...prevLi].map((li) => li.style.marginTop).join();
+    prevLi.forEach((li) => {
+      li.classList.remove("pb-li");
+      li.style.marginTop = "";
+    });
     const addSpacer = (before, top, limit) => {
       const spacer = document.createElement("div");
       spacer.className = "pb-spacer";
@@ -324,9 +330,19 @@
       before.before(spacer);
     };
     // En orden: cada espacio agregado corre lo que viene después.
-    preview.querySelectorAll(".main h3, .paper > h3, .entry").forEach((el) => {
+    // Los puntos de un ítem más largo que una hoja (y de las listas sueltas) pasan enteros a la hoja
+    // siguiente, como hace el PDF con cada viñeta.
+    const SEL = ".main h3, .paper > h3, .entry, .entry li, .main > ul > li, .paper > ul > li";
+    preview.querySelectorAll(SEL).forEach((el) => {
       const top = topIn(el);
       const limit = Math.ceil((top + 1) / PAGE_HEIGHT) * PAGE_HEIGHT - PAGE_PAD;
+      if (el.tagName === "LI") {
+        if (top + el.offsetHeight > limit && el.offsetHeight < PAGE_HEIGHT - 2 * PAGE_PAD) {
+          el.classList.add("pb-li");
+          el.style.marginTop = Math.max(0, limit + 2 * PAGE_PAD - top) + "px";
+        }
+        return;
+      }
       if (el.tagName === "H3") {
         // Un título sin ítems debajo (perfil, habilidades…) necesita 48 px libres, como en el PDF.
         const next = el.nextElementSibling;
@@ -343,7 +359,8 @@
     const pages = Math.max(1, Math.ceil(preview.scrollHeight / PAGE_HEIGHT - 0.02));
     const marks = preview.querySelectorAll(".page-break");
     const key = [...preview.querySelectorAll(".pb-spacer")].map((s) => s.style.height).join();
-    if (marks.length === pages - 1 && key === prevKey) return;
+    const liKey = [...preview.querySelectorAll(".pb-li")].map((li) => li.style.marginTop).join();
+    if (marks.length === pages - 1 && key === prevKey && liKey === prevLiKey) return;
     marks.forEach((m) => m.remove());
     for (let n = 2; n <= pages; n++) {
       const m = document.createElement("div");
