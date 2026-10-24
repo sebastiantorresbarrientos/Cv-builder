@@ -432,6 +432,9 @@ select { appearance: none; -webkit-appearance: none; padding-right: 32px;
 .modal-card button.pay b { font-weight: 700; }
 .modal-card button.pp { background: #ffc439; border-color: #ffc439; color: #111; }
 .modal-card button.pp:hover { background: #f2b52e; border-color: #f2b52e; }
+.modal-card .codigo { display: flex; gap: 8px; margin: 4px 0 10px; }
+.modal-card .codigo input { flex: 1; min-width: 0; }
+.modal-card .codigo button { width: auto; border: 1px solid var(--line); color: var(--ink); }
 .modal-card button.gratis { margin-bottom: 4px; border: 1px solid var(--line); }
 .modal-card .hint { margin-top: 8px; }
 

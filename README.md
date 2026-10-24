@@ -39,6 +39,7 @@ Sin credenciales, las descargas son gratis y sin marca.
 | `PAYPAL_MONEDA` | `USD` | Moneda en PayPal |
 | `PUBLIC_URL` | (se deduce) | URL pública del sitio para la vuelta desde Mercado Pago y el dominio de la marca de agua |
 | `MARCA_AGUA` | `Hecho con <dominio>` | Texto de la marca de agua en las descargas sin pagar |
+| `CODIGO_GRATIS` | (vacío) | Código que permite una descarga sin marca de agua y sin pagar (hay que escribirlo de nuevo para cada descarga). Sin la variable no aparece el campo del código |
 
 
 ## Importar un CV con IA

@@ -83,6 +83,25 @@ app.post("/api/paypal/capturar", async (req, res) => {
   }
 });
 
+// Canjea un código de descarga gratis por un pagoId. Pocos intentos por IP para que no se pueda adivinar.
+const intentos = new Map();
+function intentoPermitido(ip) {
+  const ahora = Date.now();
+  const recientes = (intentos.get(ip) || []).filter((t) => ahora - t < 3600 * 1000);
+  if (recientes.length >= 10) return false;
+  recientes.push(ahora);
+  intentos.set(ip, recientes);
+  return true;
+}
+app.post("/api/codigo", (req, res) => {
+  // La última IP de X-Forwarded-For la agrega el proxy de Railway; las anteriores las puede inventar el cliente.
+  const ip = String(req.headers["x-forwarded-for"] || req.ip || "").split(",").pop().trim();
+  if (!intentoPermitido(ip)) return res.status(429).json({ error: "Demasiados intentos. Prueba en una hora." });
+  const pagoId = pagos.canjearCodigo(req.body && req.body.codigo);
+  if (!pagoId) return res.status(400).json({ error: "Ese código no es válido" });
+  res.json({ pagoId });
+});
+
 app.post("/api/export/pdf", pagos.verificarPago, (req, res) => {
   try {
     const cv = req.body || {};

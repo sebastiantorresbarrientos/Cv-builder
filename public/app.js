@@ -515,6 +515,7 @@
     const { mercadopago, paypal } = pagoConfig;
     btnMp.hidden = !mercadopago;
     btnPp.hidden = !paypal;
+    document.getElementById("codigo-form").hidden = !pagoConfig.codigo;
     if (mercadopago) btnMp.querySelector("b").textContent = precioTexto(mercadopago);
     if (paypal) btnPp.querySelector("b").textContent = precioTexto(paypal);
     document.getElementById("pay-horas").textContent = pagoConfig.vigenciaHoras;
@@ -651,6 +652,34 @@
     if (d) descargar(d.tipo, d.btn, null);
   });
 
+  // Código de descarga gratis: cuenta como un pago vigente.
+  document.getElementById("codigo-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const input = document.getElementById("codigo-input");
+    const btn = e.target.querySelector("button");
+    if (!input.value.trim()) return input.focus();
+    btn.disabled = true;
+    try {
+      const res = await fetch("/api/codigo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ codigo: input.value }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.pagoId) throw new Error(data.error || "Error " + res.status);
+      setPago(data.pagoId);
+      input.value = "";
+      const d = pendiente;
+      closePayModal();
+      showToast("Código aplicado: esta descarga sale sin marca de agua");
+      if (d) descargar(d.tipo, d.btn, data.pagoId);
+    } catch (err) {
+      showToast(err.message || "No se pudo usar el código");
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
   async function exportar(tipo, btn) {
     if (!state.nombre.trim()) {
       showToast("Escribe al menos tu nombre antes de descargar");
@@ -681,6 +710,8 @@
       if (pagoId && res.headers.get("X-Marca-Agua")) {
         setPago(null);
         showToast("Tu pago ya no está vigente, así que el archivo salió con marca de agua.", 6000);
+      } else if (String(pagoId || "").startsWith("cod:")) {
+        setPago(null); // el código vale para una sola descarga
       }
       const blob = await res.blob();
       const cd = res.headers.get("Content-Disposition") || "";
