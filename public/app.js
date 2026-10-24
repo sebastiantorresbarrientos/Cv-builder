@@ -269,9 +269,26 @@
     });
   }
 
+  // Si el CV no cabe en una hoja A4 (848 px de alto a este ancho), marca dónde empieza cada página.
+  const PAGE_HEIGHT = 848;
+  function markPages() {
+    const pages = Math.max(1, Math.ceil(preview.scrollHeight / PAGE_HEIGHT - 0.02));
+    const marks = preview.querySelectorAll(".page-break");
+    if (marks.length === pages - 1) return;
+    marks.forEach((m) => m.remove());
+    for (let n = 2; n <= pages; n++) {
+      const m = document.createElement("div");
+      m.className = "page-break";
+      m.style.top = (n - 1) * PAGE_HEIGHT + "px";
+      m.innerHTML = `<span>Página ${n}</span>`;
+      preview.appendChild(m);
+    }
+  }
+
   // Escala la hoja (ancho fijo de 600 px) al ancho disponible del panel.
   const stage = document.getElementById("preview-stage");
   function fitPreview() {
+    markPages();
     const scale = Math.min(1, stage.clientWidth / preview.offsetWidth);
     preview.style.transform = scale < 1 ? `scale(${scale})` : "";
     stage.style.height = Math.ceil(preview.offsetHeight * scale) + "px";
