@@ -83,6 +83,7 @@
 
   const state = {
     plantilla: "clasico",
+    color: "",
     estiloHabilidades: "lista",
     nombre: "", titulo: "", email: "", telefono: "", ubicacion: "", linkedin: "", web: "",
     resumen: "", habilidades: "", adicional: "", foto: "",
@@ -172,11 +173,37 @@
     return [String(a || "").trim(), actual ? "Actualidad" : String(b || "").trim()].filter(Boolean).join(" - ");
   }
 
-  // Plantillas de dos columnas (deben coincidir con las que tienen `sidebar` en lib/themes.js).
-  const SIDEBAR_TEMPLATES = ["lateral", "lateralclaro"];
+  // Colores de cada plantilla y paleta (los sirve /temas.js desde lib/themes.js).
+  const TEMAS = window.CV_TEMAS || { paleta: [], colores: {}, laterales: ["lateral", "lateralclaro"] };
+  const SIDEBAR_TEMPLATES = TEMAS.laterales;
+
+  // Muestras de la paleta (la primera, "Original", ya está en el HTML).
+  const coloresBox = document.getElementById("colores");
+  TEMAS.paleta.forEach((p) => {
+    coloresBox.insertAdjacentHTML("beforeend",
+      `<label class="color" title="${esc(p.nombre)}"><input type="radio" name="color" value="${esc(p.id)}" />` +
+      `<span class="sw" style="background:#${esc(p.hex)}"></span></label>`);
+  });
+  const FOTO_EN_HEAD = "conFoto";
+
+  // Pasa los colores de la plantilla (con el color elegido, si hay) a variables CSS de la hoja.
+  function applyColors() {
+    const porColor = TEMAS.colores[state.plantilla] || TEMAS.colores.clasico;
+    if (!porColor) return;
+    const c = porColor[state.color] || porColor[""];
+    const vars = { "--acc": c.acc, "--tint": c.tint, "--band-sub": c.bandSub };
+    if (c.side) {
+      Object.assign(vars, {
+        "--side-bg": c.side.bg, "--side-text": c.side.text, "--side-muted": c.side.muted,
+        "--side-head": c.side.head, "--side-tag": c.side.tag, "--side-track": c.side.track,
+      });
+    }
+    for (const [k, v] of Object.entries(vars)) preview.style.setProperty(k, "#" + v);
+  }
 
   function renderPreview() {
     preview.className = "paper tpl-" + state.plantilla;
+    applyColors();
     const sidebar = SIDEBAR_TEMPLATES.includes(state.plantilla);
     const contacto = [state.email, state.telefono, state.ubicacion, state.linkedin, state.web]
       .map((s) => String(s || "").trim()).filter(Boolean);
@@ -187,7 +214,11 @@
 
     let html = "";
     if (!sidebar) {
-      html += `<div class="head">${nombre}`;
+      // Con foto: la foto va en el encabezado, a la izquierda del nombre.
+      const fotoHead = state.plantilla === FOTO_EN_HEAD && state.foto;
+      html += fotoHead
+        ? `<div class="head con-foto"><img class="h-photo" src="${esc(state.foto)}" alt="" />${nombre}`
+        : `<div class="head">${nombre}`;
       if (contacto.length) html += `<div class="contact">${contacto.map(esc).join(" &nbsp;|&nbsp; ")}</div>`;
       html += `</div>`;
     } else {
@@ -246,6 +277,11 @@
       html = `<div class="cols"><aside class="side">${side}</aside><div class="main">${html}</div></div>`;
     }
     preview.innerHTML = html;
+    // Último ítem de cada sección: su línea de tiempo termina en el ítem (Cronológico).
+    preview.querySelectorAll(".entry").forEach((e) => {
+      const n = e.nextElementSibling;
+      e.classList.toggle("last", !(n && n.classList.contains("entry")));
+    });
     fitSideText();
     fitPreview();
   }

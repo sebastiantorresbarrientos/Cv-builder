@@ -4,12 +4,26 @@ const { buildPdf } = require("./lib/pdf");
 const { buildDocx } = require("./lib/docx");
 const pagos = require("./lib/pagos");
 const importador = require("./lib/importar");
+const { THEMES, PALETA, getTheme } = require("./lib/themes");
 
 const app = express();
 app.set("trust proxy", true);
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json({ limit: "2mb" }));
+
+// Colores de cada plantilla, original y con cada color de la paleta, para la vista previa.
+// Se sirve como script para tenerlos antes del primer dibujo (lo carga index.html antes de app.js).
+const colores = (t) => ({ acc: t.accent, tint: t.tint, bandSub: t.bandSub || "FFFFFF", side: t.sidebar || null });
+const TEMAS_JS = "window.CV_TEMAS = " + JSON.stringify({
+  paleta: PALETA,
+  colores: Object.fromEntries(Object.keys(THEMES).map((id) => [
+    id,
+    Object.fromEntries([["", colores(getTheme(id))], ...PALETA.map((p) => [p.id, colores(getTheme(id, p.id))])]),
+  ])),
+  laterales: Object.keys(THEMES).filter((id) => THEMES[id].sidebar),
+}) + ";\n";
+app.get("/temas.js", (_req, res) => res.type("application/javascript").send(TEMAS_JS));
 app.use(express.static(path.join(__dirname, "public")));
 
 function fileName(cv) {
