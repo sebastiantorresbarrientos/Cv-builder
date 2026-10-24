@@ -659,7 +659,7 @@
       input.value = "";
       const d = pendiente;
       closePayModal();
-      showToast("Código aplicado: descargas sin marca de agua");
+      showToast("Código aplicado: esta descarga sale sin marca de agua");
       if (d) descargar(d.tipo, d.btn, data.pagoId);
     } catch (err) {
       showToast(err.message || "No se pudo usar el código");
@@ -698,6 +698,8 @@
       if (pagoId && res.headers.get("X-Marca-Agua")) {
         setPago(null);
         showToast("Tu pago ya no está vigente, así que el archivo salió con marca de agua.", 6000);
+      } else if (String(pagoId || "").startsWith("cod:")) {
+        setPago(null); // el código vale para una sola descarga
       }
       const blob = await res.blob();
       const cd = res.headers.get("Content-Disposition") || "";
