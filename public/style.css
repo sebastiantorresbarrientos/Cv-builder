@@ -176,6 +176,36 @@ select { appearance: none; -webkit-appearance: none; padding-right: 32px;
 .tpl-box.tpl-compacto i:first-child { background: #374151; width: 45%; }
 .tpl-box.tpl-compacto i:nth-child(2) { height: 10px; background: #e5e7eb; border-radius: 2px; }
 
+.tpl-box.tpl-cronologico i:first-child { background: #4d7c0f; }
+.tpl-box.tpl-cronologico i:not(:first-child) { position: relative; margin-left: 14px; }
+.tpl-box.tpl-cronologico i:not(:first-child)::before {
+  content: ""; position: absolute; left: -11px; top: -1px; width: 7px; height: 7px; border-radius: 50%; background: #4d7c0f;
+}
+.tpl-box.tpl-dobleColumna { position: relative; padding-right: 38%; }
+.tpl-box.tpl-dobleColumna::before { content: ""; position: absolute; right: 0; top: 0; bottom: 0; width: 30%; border-radius: 0 10px 10px 0; background: #f6e9e5; }
+.tpl-box.tpl-dobleColumna i:first-child { background: #9b3016; }
+.tpl-box.tpl-conFoto { position: relative; padding: 0; overflow: hidden; }
+.tpl-box.tpl-conFoto i:first-child { width: 100%; height: 32px; border-radius: 0; background: #8c3c4b; margin-bottom: 10px; }
+.tpl-box.tpl-conFoto i:not(:first-child) { margin-left: 12px; margin-right: 12px; }
+.tpl-box.tpl-conFoto::before {
+  content: ""; position: absolute; left: 10px; top: 6px; width: 20px; height: 20px; border-radius: 50%; background: #f1d9de; border: 1.5px solid #fff;
+}
+
+/* ---------- Color ---------- */
+.sub-title { margin: 18px 0 8px; font-size: 13px; font-weight: 600; color: var(--ink); }
+.colores { display: flex; flex-wrap: wrap; gap: 10px; }
+.color { position: relative; cursor: pointer; }
+.color input { position: absolute; width: 1px; height: 1px; margin: 0; opacity: 0; pointer-events: none; }
+.color .sw {
+  display: block; width: 30px; height: 30px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .12);
+  transition: transform .15s, box-shadow .15s;
+}
+.color:hover .sw { transform: scale(1.08); }
+.color input:checked + .sw { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--brand); }
+.color input:focus-visible + .sw { outline: 3px solid #b9c7da; outline-offset: 4px; }
+/* "Original": varios colores, para indicar que se usa el de cada plantilla. */
+.sw-original { background: conic-gradient(#1f3a5f 0 25%, #0f766e 0 50%, #8c3c4b 0 75%, #4d7c0f 0); }
+
 /* ---------- Estilo de habilidades ---------- */
 .skill-styles { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
 .sk { cursor: pointer; }
@@ -235,7 +265,7 @@ select { appearance: none; -webkit-appearance: none; padding-right: 32px;
 .preview-stage { display: flex; justify-content: center; align-items: flex-start; overflow: hidden; min-width: 0; }
 .preview-wrap, #cv-form { min-width: 0; }
 .paper {
-  flex: none; width: 600px; min-height: 848px; transform-origin: top center;
+  flex: none; width: 595px; min-height: 842px; transform-origin: top center;
   background: #fff; border-radius: 6px;
   box-shadow: 0 1px 3px rgba(23, 32, 51, .08), 0 18px 40px rgba(23, 32, 51, .14);
   padding: 32px 34px; font-size: 12.5px; line-height: 1.45; color: #1a1a1a; overflow: hidden;
@@ -264,40 +294,58 @@ select { appearance: none; -webkit-appearance: none; padding-right: 32px;
 .paper .side p, .paper .side li { text-align: left; }
 .paper .empty { color: #9ca3af; }
 
-.paper.tpl-clasico { font-family: Helvetica, Arial, sans-serif; }
-.paper.tpl-clasico h1, .paper.tpl-clasico h3 { color: #1f3a5f; }
-.paper.tpl-clasico h3 { border-bottom: 1.5px solid #1f3a5f; padding-bottom: 2px; }
+/* Colores de la plantilla: app.js los pone como variables en la hoja (con la paleta elegida, si hay).
+   --acc acento, --tint tono claro, --band-sub subtítulo en la banda, --side-* barra lateral. */
+.paper {
+  --acc: #1f3a5f; --tint: #e3eaf3; --band-sub: #fff;
+  --side-bg: #1f3a5f; --side-text: #fff; --side-muted: #c7d3e3; --side-head: #fff; --side-tag: #2e4f7a; --side-track: #3b5a82;
+}
+.paper { font-family: Helvetica, Arial, Arimo, sans-serif; }
+.paper.tpl-minimalista, .paper.tpl-elegante { font-family: "Times New Roman", Times, Tinos, serif; }
+.paper h1 { color: var(--acc); }
 
-.paper.tpl-moderno { font-family: Helvetica, Arial, sans-serif; padding-top: 0; }
-.paper.tpl-moderno .head { background: #0f766e; color: #fff; margin: 0 -34px 6px; padding: 26px 34px 20px; }
-.paper.tpl-moderno .head .sub { color: #d1fae5; }
-.paper.tpl-moderno h3 { color: #0f766e; border-left: 4px solid #0f766e; padding-left: 8px; }
+/* Títulos de sección: línea inferior, barra a la izquierda, simple o con fondo. */
+.paper.tpl-clasico h3, .paper.tpl-ejecutivo h3, .paper.tpl-elegante h3, .paper.tpl-cronologico h3,
+.paper.tpl-conFoto h3, .paper.tpl-lateral .main h3, .paper.tpl-dobleColumna .main h3 {
+  color: var(--acc); border-bottom: 1.5px solid var(--acc); padding-bottom: 2px;
+}
+.paper.tpl-elegante h3 { border-bottom-width: 1px; }
+.paper.tpl-moderno h3, .paper.tpl-corporativo h3, .paper.tpl-lateralclaro .main h3 {
+  color: var(--acc); border-left: 4px solid var(--acc); padding-left: 8px;
+}
+.paper.tpl-minimalista h3 { color: var(--acc); letter-spacing: .18em; }
+.paper.tpl-compacto h3 { color: var(--acc); background: var(--tint); padding: 3px 7px; }
 
-.paper.tpl-minimalista { font-family: Georgia, "Times New Roman", serif; }
-.paper.tpl-minimalista .head { text-align: center; }
-.paper.tpl-minimalista h1 { color: #222; font-size: 22px; }
-.paper.tpl-minimalista h3 { color: #222; letter-spacing: .18em; }
+/* Encabezado: centrado o en banda de color. */
+.paper.tpl-minimalista .head, .paper.tpl-elegante .head { text-align: center; }
+.paper.tpl-moderno, .paper.tpl-ejecutivo, .paper.tpl-conFoto { padding-top: 0; }
+.paper.tpl-moderno .head, .paper.tpl-ejecutivo .head, .paper.tpl-conFoto .head {
+  background: var(--acc); color: #fff; margin: 0 -34px 6px; padding: 26px 34px 20px;
+}
+.paper.tpl-moderno .head h1, .paper.tpl-ejecutivo .head h1, .paper.tpl-conFoto .head h1 { color: #fff; }
+.paper.tpl-moderno .head .sub, .paper.tpl-ejecutivo .head .sub, .paper.tpl-conFoto .head .sub { color: var(--band-sub); }
 
-.paper.tpl-ejecutivo { font-family: Helvetica, Arial, sans-serif; padding-top: 0; }
-.paper.tpl-ejecutivo .head { background: #1e293b; color: #fff; margin: 0 -34px 6px; padding: 26px 34px 20px; }
-.paper.tpl-ejecutivo .head .sub { color: #cbd5e1; }
-.paper.tpl-ejecutivo h3 { color: #1e293b; border-bottom: 1.5px solid #1e293b; padding-bottom: 2px; }
+/* Con foto: foto redonda a la izquierda del nombre (84 pt, el texto parte 102 pt más a la derecha). */
+.paper .head.con-foto { position: relative; }
+.paper .head .h-photo {
+  position: absolute; left: 52px; top: 22px; width: 84px; height: 84px; border-radius: 50%;
+  object-fit: cover; border: 2px solid #fff; box-sizing: border-box;
+}
+.paper.paper .head.con-foto { padding-left: 154px; }
 
-.paper.tpl-elegante { font-family: Georgia, "Times New Roman", serif; }
-.paper.tpl-elegante .head { text-align: center; }
-.paper.tpl-elegante h1, .paper.tpl-elegante h3 { color: #7f1d1d; }
-.paper.tpl-elegante h3 { border-bottom: 1px solid #7f1d1d; padding-bottom: 2px; }
+/* Cronológico: línea de tiempo con un punto en cada cargo. */
+.paper.tpl-cronologico .entry { position: relative; padding-left: 16px; }
+.paper.tpl-cronologico .entry::before {
+  content: ""; position: absolute; left: 1px; top: 3px; width: 6px; height: 6px; border-radius: 50%; background: var(--acc);
+}
+.paper.tpl-cronologico .entry::after {
+  content: ""; position: absolute; left: 3.25px; top: 6px; bottom: -6px; width: 1.5px; background: var(--acc); opacity: .45;
+}
+.paper.tpl-cronologico .entry.last::after { bottom: 6px; }
 
-.paper.tpl-corporativo { font-family: Helvetica, Arial, sans-serif; }
-.paper.tpl-corporativo h1 { color: #1e40af; }
-.paper.tpl-corporativo h3 { color: #1e40af; border-left: 4px solid #1e40af; padding-left: 8px; }
-
-.paper.tpl-compacto { font-family: Helvetica, Arial, sans-serif; }
-.paper.tpl-compacto h1 { color: #374151; font-size: 22px; }
-.paper.tpl-compacto h3 { color: #374151; background: #eceef1; padding: 3px 7px; }
-
-.paper.tpl-lateral, .paper.tpl-lateralclaro { font-family: Helvetica, Arial, sans-serif; padding: 0; }
-.paper .cols { display: grid; grid-template-columns: 32% 1fr; min-height: 848px; }
+/* Plantillas con barra lateral (a la izquierda, o a la derecha en Doble columna). */
+.paper.tpl-lateral, .paper.tpl-lateralclaro, .paper.tpl-dobleColumna { padding: 0; }
+.paper .cols { display: grid; grid-template-columns: 32% 1fr; min-height: 842px; }
 .paper .cols > * { min-width: 0; }
 .paper .side { padding: 22px 16px; }
 .paper .main { padding: 26px 24px; }
@@ -316,25 +364,14 @@ select { appearance: none; -webkit-appearance: none; padding-right: 32px;
 .paper .side .lang { margin-bottom: 4px; }
 .paper .side .lang span { display: block; font-size: 11px; opacity: .8; }
 .paper .side ul { padding-left: 14px; }
-.paper.tpl-lateral .side { background: #1f3a5f; color: #fff; --acc: #fff; --tint: #2e4f7a; --track: #3b5a82; }
-.paper.tpl-lateral .side .sk-tags span { color: #fff; }
-.paper.tpl-lateral .main h1, .paper.tpl-lateral .main h3 { color: #1f3a5f; }
-.paper.tpl-lateral .main h3 { border-bottom: 1.5px solid #1f3a5f; padding-bottom: 2px; }
-.paper.tpl-lateralclaro .side { background: #eef2f6; color: #1f2937; --acc: #0e7490; --tint: #ddf0f5; --track: #d5dce4; }
-.paper.tpl-lateralclaro .side h3 { color: #0e7490; }
-.paper.tpl-lateralclaro .main h1 { color: #0e7490; }
-.paper.tpl-lateralclaro .main h3 { color: #0e7490; border-left: 4px solid #0e7490; padding-left: 8px; }
+.paper .side { background: var(--side-bg); color: var(--side-text); --acc: var(--side-head); --tint: var(--side-tag); --track: var(--side-track); }
+.paper .side h3 { color: var(--side-head); }
+.paper .side .sk-tags span { color: var(--side-text); }
+.paper .side .lang span { color: var(--side-muted); }
+.paper.tpl-dobleColumna .cols { grid-template-columns: 1fr 190px; }
+.paper.tpl-dobleColumna .side { order: 2; }
 
 /* Habilidades en la vista previa (el color sigue la plantilla) */
-.paper { --acc: #1f3a5f; --tint: #e3eaf3; }
-.paper.tpl-moderno { --acc: #0f766e; --tint: #ddf1ee; }
-.paper.tpl-minimalista { --acc: #222; --tint: #eee; }
-.paper.tpl-ejecutivo { --acc: #1e293b; --tint: #e2e8f0; }
-.paper.tpl-elegante { --acc: #7f1d1d; --tint: #f5e6e6; }
-.paper.tpl-corporativo { --acc: #1e40af; --tint: #e0e7fa; }
-.paper.tpl-compacto { --acc: #374151; --tint: #eceef1; }
-.paper.tpl-lateral { --acc: #1f3a5f; --tint: #e3eaf3; }
-.paper.tpl-lateralclaro { --acc: #0e7490; --tint: #ddf0f5; }
 .paper .sk-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 6px; }
 .paper .sk-tags span { background: var(--tint); color: var(--acc); padding: 2px 8px; border-radius: 4px; font-size: 12px; }
 .paper .sk-cols { columns: 3; column-gap: 16px; padding-left: 16px; }
@@ -350,6 +387,66 @@ select { appearance: none; -webkit-appearance: none; padding-right: 32px;
 .paper .sk-dots .marks { white-space: nowrap; }
 .paper .sk-dots i { font-style: normal; color: var(--track, #e5e7eb); font-size: 12px; margin-left: 1px; }
 .paper .sk-dots i.on { color: var(--acc); }
+
+/* ---------- Proporciones iguales al PDF ----------
+   La hoja mide 595 × 842 px, igual que el A4 en puntos, así que 1 pt del PDF = 1 px aquí.
+   Arimo y Tinos tienen las mismas medidas que Helvetica y Times: se usan donde esas no existen (Android).
+   Márgenes, tamaños de letra e interlineado copian lib/pdf.js para que el texto
+   corte en las mismas líneas y las páginas salgan iguales. */
+/* Interlineado de cada letra en el PDF (pdfkit): normal, negrita y cursiva. */
+.paper { --lh: 1.156; --lh-b: 1.19; --lh-i: 1.156; padding: 48px 52px; font-size: 10px; line-height: var(--lh); }
+.paper.tpl-minimalista, .paper.tpl-elegante { --lh: 1.116; --lh-b: 1.153; --lh-i: 1.1; }
+.paper h1, .paper h3, .paper .e-head, .paper .side .lang b { line-height: var(--lh-b) !important; }
+.paper .e-sub { line-height: var(--lh-i); }
+.paper p { margin: 0; white-space: pre-line; }
+.paper h1 { font-size: 24px; }
+.paper.tpl-moderno h1, .paper.tpl-ejecutivo h1, .paper.tpl-elegante h1, .paper.tpl-cronologico h1, .paper.tpl-conFoto h1,
+.paper.tpl-lateral h1, .paper.tpl-lateralclaro h1, .paper.tpl-dobleColumna h1 { font-size: 26px; }
+.paper.tpl-minimalista h1, .paper.tpl-compacto h1 { font-size: 22px; }
+.paper .sub { font-size: 12px; }
+.paper .contact { margin-top: 3.5px; font-size: 9.5px; }
+.paper.paper h3, .paper.paper .main h3, .paper.paper .side h3 {
+  margin-top: 9.25px; font-size: 11px; letter-spacing: 0; padding-bottom: 1px;
+}
+.paper.paper h3, .paper.paper .main h3, .paper.paper .side h3 { border-bottom-width: .8px !important; margin-bottom: 3.44px; }
+/* Título con barra a la izquierda (sin línea inferior) y título simple: mismo alto que en el PDF. */
+.paper.tpl-moderno h3, .paper.tpl-corporativo h3, .paper.tpl-lateralclaro .main h3 { padding-bottom: 0; margin-bottom: 5.24px; }
+.paper.tpl-elegante h3 { margin-bottom: 3.27px; }
+.paper.tpl-minimalista h3 { font-size: 10.5px; letter-spacing: 2px; padding-bottom: 0; margin-bottom: 4.84px; }
+.paper.tpl-compacto h3 { font-size: 10.5px; letter-spacing: .5px; padding: 4px 7px 1.5px; margin: 6.25px 0 6.85px; }
+.paper .e-head { font-size: 10.5px; gap: 5px; }
+.paper .e-head span { font-size: 9.5px; }
+.paper .e-sub { font-size: 10px; }
+.paper .entry { padding-bottom: 5.8px; } /* padding y no margin: en el PDF este espacio se suma al del título siguiente */
+.paper ul { margin: 0; padding-left: 0; list-style: none; }
+.paper li { position: relative; margin-top: 1px; padding-left: 16px; }
+.paper li::before { content: "•"; position: absolute; left: 6px; }
+.paper .sk-cols, .paper .side ul { padding-left: 0; }
+.paper .sk-cols li, .paper .side li { padding-left: 11px; }
+.paper .sk-cols li::before, .paper .side li::before { left: 1px; color: var(--acc); }
+.paper .sk-tags span { font-size: 9.5px; }
+
+/* Bandas de color de moderno y ejecutivo: 128 pt de alto, el nombre parte a 34 pt. */
+.paper.tpl-moderno .head, .paper.tpl-ejecutivo .head, .paper.tpl-conFoto .head {
+  margin: -48px -52px 0; padding: 34px 52px 10px; min-height: 128px; box-sizing: border-box;
+}
+/* En el PDF el cuerpo parte 4 pt bajo la banda y el título deja 8,8 pt más. */
+.paper.tpl-moderno .head + h3, .paper.tpl-ejecutivo .head + h3, .paper.tpl-conFoto .head + h3 { margin-top: 12.79px; }
+.paper.tpl-moderno, .paper.tpl-ejecutivo, .paper.tpl-conFoto { padding-top: 48px; }
+
+/* Plantillas con barra lateral: barra de 190 pt; márgenes 40/22 en la barra y 44/28/40 en el cuerpo. */
+.paper.tpl-lateral, .paper.tpl-lateralclaro, .paper.tpl-dobleColumna { padding: 0; }
+.paper .cols { grid-template-columns: 190px 1fr; }
+.paper.tpl-dobleColumna .cols { grid-template-columns: 1fr 190px; }
+.paper.tpl-dobleColumna .main { padding: 44px 28px 44px 40px; }
+.paper .side { padding: 40px 22px; }
+.paper .main { padding: 44px 40px 44px 28px; }
+.paper .main .sub { margin-top: 2px; font-size: 12.5px; }
+.paper .side .c-line { font-size: 9.5px; margin: 2px 0 0; }
+.paper .side .lang { margin: 2px 0 0; }
+.paper .side .lang b { font-size: 10px; }
+.paper .side .lang span { font-size: 9.5px; opacity: 1; }
+.paper .side .photo { width: 112px; height: 112px; object-fit: cover; margin-bottom: 6px; }
 
 /* ---------- Ventana de pago ---------- */
 .modal {

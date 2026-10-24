@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#1f3a5f" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600;700&family=Tinos:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -83,7 +83,30 @@
             <span class="tpl-box tpl-lateralclaro"><i></i><i></i><i></i></span>
             <strong>Lateral claro</strong>
           </label>
+          <label class="tpl">
+            <input type="radio" name="plantilla" value="cronologico" />
+            <span class="tpl-box tpl-cronologico"><i></i><i></i><i></i></span>
+            <strong>Cronológico</strong>
+          </label>
+          <label class="tpl">
+            <input type="radio" name="plantilla" value="dobleColumna" />
+            <span class="tpl-box tpl-dobleColumna"><i></i><i></i><i></i></span>
+            <strong>Doble columna</strong>
+          </label>
+          <label class="tpl">
+            <input type="radio" name="plantilla" value="conFoto" />
+            <span class="tpl-box tpl-conFoto"><i></i><i></i><i></i></span>
+            <strong>Con foto</strong>
+          </label>
         </div>
+        <h3 class="sub-title">Color</h3>
+        <div class="colores" id="colores" role="radiogroup" aria-label="Color del CV">
+          <label class="color" title="Original de la plantilla">
+            <input type="radio" name="color" value="" checked />
+            <span class="sw sw-original"></span>
+          </label>
+        </div>
+        <p class="hint">El color se aplica a cualquier formato, en la vista previa, el PDF y el Word.</p>
       </section>
 
       <section class="card">
@@ -104,7 +127,7 @@
               <label class="btn-file">Subir foto<input type="file" id="foto-input" accept="image/png,image/jpeg" /></label>
               <button type="button" id="foto-quitar" class="remove" hidden>Quitar</button>
             </div>
-            <p class="hint">Opcional. Se muestra en las plantillas Lateral y Lateral claro.</p>
+            <p class="hint">Opcional. Se muestra en los formatos Lateral, Lateral claro, Doble columna y Con foto.</p>
           </div>
         </div>
       </section>
@@ -190,6 +213,7 @@
   </div>
 
   <div id="toast" class="toast" hidden></div>
+  <script src="temas.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
