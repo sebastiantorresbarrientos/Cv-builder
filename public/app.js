@@ -164,6 +164,10 @@
     const items = String(text || "").split("\n").map((l) => l.replace(/^[\s•\-*]+/, "").trim()).filter(Boolean);
     return items.length ? `<ul>${items.map((i) => `<li>${esc(i)}</li>`).join("")}</ul>` : "";
   }
+  function entryHtml(titulo, fechas, sub, descripcion) {
+    return `<div class="entry"><div class="e-head">${esc(titulo)}<span>${esc(fechas)}</span></div>` +
+      (sub ? `<div class="e-sub">${esc(sub)}</div>` : "") + bulletList(descripcion) + `</div>`;
+  }
   function range(a, b, actual) {
     return [String(a || "").trim(), actual ? "Actualidad" : String(b || "").trim()].filter(Boolean).join(" - ");
   }
@@ -196,19 +200,14 @@
     if (exp.length) {
       html += `<h3>Experiencia laboral</h3>`;
       exp.forEach((e) => {
-        html += `<div class="e-head">${esc(e.cargo)}<span>${esc(range(e.desde, e.hasta, e.actual))}</span></div>`;
-        const sub = [e.empresa, e.lugar].filter(Boolean).join(" · ");
-        if (sub) html += `<div class="e-sub">${esc(sub)}</div>`;
-        html += bulletList(e.descripcion);
+        html += entryHtml(e.cargo, range(e.desde, e.hasta, e.actual), [e.empresa, e.lugar].filter(Boolean).join(" · "), e.descripcion);
       });
     }
     const edu = state.educacion.filter((e) => e.titulo || e.institucion);
     if (edu.length) {
       html += `<h3>Educación</h3>`;
       edu.forEach((e) => {
-        html += `<div class="e-head">${esc(e.titulo)}<span>${esc(range(e.desde, e.hasta, false))}</span></div>`;
-        if (e.institucion) html += `<div class="e-sub">${esc(e.institucion)}</div>`;
-        html += bulletList(e.descripcion);
+        html += entryHtml(e.titulo, range(e.desde, e.hasta, false), e.institucion, e.descripcion);
       });
     }
     if (!sidebar) {
@@ -225,9 +224,7 @@
         if (!items.length) return;
         html += `<h3>${esc(titulo)}</h3>`;
         items.forEach((e) => {
-          html += `<div class="e-head">${esc(e.titulo)}<span>${esc(range(e.desde, e.hasta, false))}</span></div>`;
-          if (e.subtitulo) html += `<div class="e-sub">${esc(e.subtitulo)}</div>`;
-          html += bulletList(e.descripcion);
+          html += entryHtml(e.titulo, range(e.desde, e.hasta, false), e.subtitulo, e.descripcion);
         });
       } else if (String(sec.contenido || "").trim()) {
         html += `<h3>${esc(titulo)}</h3>`;
@@ -270,11 +267,35 @@
   }
 
   // Si el CV no cabe en una hoja A4 (848 px de alto a este ancho), marca dónde empieza cada página.
+  // Igual que en el PDF, un ítem que no cabe al final de una hoja pasa entero a la siguiente
+  // (con su título de sección si es el primero); aquí se simula con un espacio antes del ítem.
   const PAGE_HEIGHT = 848;
+  const PAGE_PAD = 32;
+  function topIn(el) {
+    let y = 0;
+    for (let n = el; n && n !== preview; n = n.offsetParent) y += n.offsetTop;
+    return y;
+  }
   function markPages() {
+    const prev = preview.querySelectorAll(".pb-spacer");
+    const prevKey = [...prev].map((s) => s.style.height).join();
+    prev.forEach((s) => s.remove());
+    preview.querySelectorAll(".entry").forEach((el) => {
+      const top = topIn(el);
+      const bottom = top + el.offsetHeight;
+      const limit = Math.ceil((top + 1) / PAGE_HEIGHT) * PAGE_HEIGHT - PAGE_PAD;
+      if (bottom <= limit || el.offsetHeight > PAGE_HEIGHT - 2 * PAGE_PAD) return;
+      const h3 = el.previousElementSibling && el.previousElementSibling.tagName === "H3" ? el.previousElementSibling : null;
+      const target = h3 || el;
+      const spacer = document.createElement("div");
+      spacer.className = "pb-spacer";
+      spacer.style.height = Math.max(0, limit + 2 * PAGE_PAD - topIn(target)) + "px";
+      target.before(spacer);
+    });
     const pages = Math.max(1, Math.ceil(preview.scrollHeight / PAGE_HEIGHT - 0.02));
     const marks = preview.querySelectorAll(".page-break");
-    if (marks.length === pages - 1) return;
+    const key = [...preview.querySelectorAll(".pb-spacer")].map((s) => s.style.height).join();
+    if (marks.length === pages - 1 && key === prevKey) return;
     marks.forEach((m) => m.remove());
     for (let n = 2; n <= pages; n++) {
       const m = document.createElement("div");
